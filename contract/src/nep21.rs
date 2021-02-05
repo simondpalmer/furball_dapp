@@ -19,7 +19,7 @@
 use near_sdk::borsh::{self, BorshDeserialize, BorshSerialize};
 use near_sdk::collections::UnorderedMap;
 use near_sdk::json_types::U128;
-use near_sdk::{env, near_bindgen, wee_alloc, AccountId, Balance, Promise, StorageUsage};
+use near_sdk::{env, AccountId, Balance, Promise, StorageUsage};
 use crate::account::{Account};
 
 
@@ -86,7 +86,6 @@ impl FungibleToken {
     /// Requirements:
     /// * Caller of the method has to attach deposit enough to cover storage difference at the
     ///   fixed storage price defined in the contract.
-    #[payable]
     pub fn dec_allowance(&mut self, escrow_account_id: AccountId, amount: U128) {
         let initial_storage = env::storage_usage();
         assert!(
@@ -116,7 +115,6 @@ impl FungibleToken {
     ///   the account of `owner_id` should be greater or equal than the transfer `amount`.
     /// * Caller of the method has to attach deposit enough to cover storage difference at the
     ///   fixed storage price defined in the contract.
-    #[payable]
     pub fn transfer_from(&mut self, owner_id: AccountId, new_owner_id: AccountId, amount: U128) {
         let initial_storage = env::storage_usage();
         assert!(
@@ -167,7 +165,6 @@ impl FungibleToken {
     /// Requirements:
     /// * Caller of the method has to attach deposit enough to cover storage difference at the
     ///   fixed storage price defined in the contract.
-    #[payable]
     pub fn transfer(&mut self, new_owner_id: AccountId, amount: U128) {
         // NOTE: New owner's Account ID checked in transfer_from.
         // Storage fees are also refunded in transfer_from.

@@ -1,7 +1,10 @@
-C:\Users\Simon Palmer\Documents\Programming\ETHDenver 2021\furball-dapp\contract\target\debug\deps\DesignToken.dll: src\lib.rs
+/home/lev/code/blockchain/baf/ethdenver21/furball_dapp/contract/target/debug/deps/libDesignToken.so: src/lib.rs src/account.rs src/error.rs src/nep21.rs
 
-C:\Users\Simon Palmer\Documents\Programming\ETHDenver 2021\furball-dapp\contract\target\debug\deps\libDesignToken.rlib: src\lib.rs
+/home/lev/code/blockchain/baf/ethdenver21/furball_dapp/contract/target/debug/deps/libDesignToken.rlib: src/lib.rs src/account.rs src/error.rs src/nep21.rs
 
-C:\Users\Simon Palmer\Documents\Programming\ETHDenver 2021\furball-dapp\contract\target\debug\deps\DesignToken.d: src\lib.rs
+/home/lev/code/blockchain/baf/ethdenver21/furball_dapp/contract/target/debug/deps/DesignToken.d: src/lib.rs src/account.rs src/error.rs src/nep21.rs
 
-src\lib.rs:
+src/lib.rs:
+src/account.rs:
+src/error.rs:
+src/nep21.rs:
