@@ -7,13 +7,13 @@ use near_sdk::json_types::U128;
 static ALLOC: near_sdk::wee_alloc::WeeAlloc = near_sdk::wee_alloc::WeeAlloc::INIT;
 
 // This isn't required, but a nice way to essentially alias a type
-pub type TokenId = u64;
+pub type UPC = u128;
 pub type AccountIdHash = Vec<u8>;
 
 #[near_bindgen]
 #[derive(BorshDeserialize, BorshSerialize)]
 pub struct DesignToken {
-    design_hash: HashMap<TokenId, String>
+    design_hash: TreeMap<UPC, String>
 }
 
 impl Default for DesignToken {
@@ -31,7 +31,7 @@ impl DesignToken {
         assert!(env::state_read::<Self>().is_none(), "Already initialized");
         // Note this is an implicit "return" here
         Self {
-            design_hash: HashMap::new(b"d".to_vec()),
+            design_hash: TreeMap::new(b"d".to_vec()),
         }
     }
 
