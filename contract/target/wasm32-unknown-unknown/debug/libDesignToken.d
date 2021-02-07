@@ -1,1 +1,0 @@
-C:\Users\Simon\ Palmer\Documents\Programming\ETHDenver\ 2021\furball-dapp\contract\target\wasm32-unknown-unknown\debug\libDesignToken.rlib: C:\Users\Simon\ Palmer\Documents\Programming\ETHDenver\ 2021\furball-dapp\contract\src\lib.rs
