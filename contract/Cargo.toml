@@ -1,5 +1,5 @@
 [package]
-name = "DesignToken"
+name = "FurBall"
 version = "0.1.0"
 authors = ["Simon Palmer <hello@near.org>, Lev Stambler <levstamb@gmail.com>"]
 edition = "2018"

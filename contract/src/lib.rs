@@ -39,6 +39,15 @@ pub trait TokenFactTrait {
     fn create_token(&mut self, artwork: CID);
 }
 
+pub trait DesignTrait {
+    fn get_designs(&self, artist: AccountId) -> UnorderedSet<CID>;
+}
+
+pub trait Proile {
+    fn update_profile(&mut self, profile: CID);
+    fn get_profile(&self, artist: CID) -> CID;
+}
+
 #[derive(BorshSerialize, BorshDeserialize)]
 pub struct Token {
     artist: AccountId,
@@ -53,6 +62,14 @@ pub struct FurBall {
     artist_to_artist_cid: UnorderedMap<AccountId, CID>,
     art_cid_to_token: UnorderedMap<CID, Token>,
     art_cids: UnorderedSet<CID>,
+}
+
+#[near_bindgen]
+impl Default for FurBall {
+    #[init]
+    fn default() -> Self {
+        FurBall::new(env::predecessor_account_id(), 1_000_000_000.into())
+    }
 }
 
 /// Constructor implementation
@@ -86,6 +103,35 @@ impl FurBall {
 }
 
 #[near_bindgen]
+impl Proile for FurBall {
+    #[payable]
+    fn update_profile(&mut self, profile: CID) {
+        self.artist_to_artist_cid
+            .insert(&env::predecessor_account_id(), &profile);
+    }
+
+    fn get_profile(&self, artist: CID) -> CID {
+        self.artist_to_artist_cid.get(&artist).unwrap()
+    }
+}
+
+#[near_bindgen]
+impl DesignTrait for FurBall {
+    fn get_designs(&self, artist: AccountId) -> UnorderedSet<CID> {
+        let mut designs: UnorderedSet<CID> = UnorderedSet::new(b"Designs".to_vec());
+        println!("Art CID: {:?}", self.art_cids.to_vec());
+        for artCID in self.art_cids.iter() {
+            if let Some(token) = self.art_cid_to_token.get(&artCID) {
+                if token.artist == artist {
+                    designs.insert(&artCID);
+                }
+            }
+        }
+        return designs;
+    }
+}
+
+#[near_bindgen]
 impl TokenFactTrait for FurBall {
     #[payable]
     fn create_token(&mut self, artwork: CID) {
@@ -106,10 +152,11 @@ impl TokenFactTrait for FurBall {
             token: nep21::FungibleToken::new(
                 env::predecessor_account_id(),
                 self.total_supply_new_tok,
-                artwork.clone()
+                artwork.clone(),
             ),
         };
         self.art_cid_to_token.insert(&artwork, &tok);
+        self.art_cids.insert(&artwork);
     }
 }
 
@@ -199,6 +246,17 @@ mod tests {
     }
 
     #[test]
+    fn test_update_artist_profile() {
+        let context = get_context(carol());
+        testing_env!(context);
+        let total_supply = 1_000_000_000_000_000u128;
+        let mut contract = FurBall::new(bob(), total_supply.into());
+
+        contract.update_profile("MY Profile CID".to_string());
+        assert_eq!(contract.get_profile(carol()), "MY Profile CID");
+    }
+
+    #[test]
     fn test_initialize_2_new_tokens() {
         let context = get_context(carol());
         testing_env!(context);
@@ -209,11 +267,32 @@ mod tests {
         contract.create_token(art.clone());
         assert_eq!(contract.get_total_supply(art.clone()), total_supply.into());
         assert_eq!(contract.get_balance(art, carol()).0, total_supply);
-
         let art2 = "QqPAwR5un1YPJEF6iB7KvErDmAhiXxwL5J5qjA3Z9ceKqv".to_string();
+
         contract.create_token(art2.clone());
-        // assert_eq!(contract.get_total_supply(art2.clone()), total_supply.into());
-        // assert_eq!(contract.get_balance(art2, carol()).0, total_supply);
+        assert_eq!(contract.get_total_supply(art2.clone()), total_supply.into());
+        assert_eq!(contract.get_balance(art2, carol()).0, total_supply);
+    }
+
+    #[test]
+    fn test_get_artist_designs() {
+        let context = get_context(carol());
+        testing_env!(context);
+        let total_supply = 1_000_000_000_000_000u128;
+
+        let mut contract = FurBall::new(bob(), total_supply.into());
+        let art = "QmPAwR5un1YPJEF6iB7KvErDmAhiXxwL5J5qjA3Z9ceKqv".to_string();
+        contract.create_token(art.clone());
+
+        let art2 = "mPAwR5un1YPJEF6iB7KvErDmAhiXxwL5J5qjA3Z9ceKqv".to_string();
+        contract.create_token(art2.clone());
+
+        let carol_des = contract.get_designs(carol());
+        println!("{:?}", carol_des.to_vec());
+        assert!(carol_des.contains(&art.clone()));
+        assert!(carol_des.contains(&art2.clone()));
+        // assert_eq!(carol_des.);
+        assert_eq!(contract.get_designs(bob()).to_vec().len(), 0);
     }
 
     // TODO: this is not working and I have no clue why
