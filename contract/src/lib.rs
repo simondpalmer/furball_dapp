@@ -1,127 +1,255 @@
-use near_sdk::{near_bindgen, env };
-use near_sdk::borsh::{self, BorshDeserialize, BorshSerialize};
-use near_sdk::collections::{ LookupMap, UnorderedMap, TreeMap };
-use near_sdk::json_types::U128;
+use env::predecessor_account_id;
+use near_sdk::{
+    borsh::{self, BorshDeserialize, BorshSerialize},
+    collections::{UnorderedMap, UnorderedSet},
+    env,
+    json_types::U128,
+    near_bindgen, wee_alloc, AccountId,
+};
+
+mod account;
+mod error;
+mod nep21;
+
+use error::Error;
 
 #[global_allocator]
-static ALLOC: near_sdk::wee_alloc::WeeAlloc = near_sdk::wee_alloc::WeeAlloc::INIT;
+static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
 
-// This isn't required, but a nice way to essentially alias a type
-pub type UPC = u128;
-pub type AccountIdHash = Vec<u8>;
+pub type CID = String;
+const MAX_CID_LEN: usize = 64;
 
-#[near_bindgen]
-#[derive(BorshDeserialize, BorshSerialize)]
-pub struct DesignToken {
-    design_hash: TreeMap<UPC, String>
+pub trait FungibleTokenTrait {
+    fn inc_allowance(&mut self, art: CID, escrow_account_id: AccountId, amount: U128);
+    fn dec_allowance(&mut self, art: CID, escrow_account_id: AccountId, amount: U128);
+    fn transfer_from(
+        &mut self,
+        art: CID,
+        owner_id: AccountId,
+        new_owner_id: AccountId,
+        amount: U128,
+    );
+    fn transfer(&mut self, art: CID, new_owner_id: AccountId, amount: U128);
+    fn get_total_supply(&self, art: CID) -> U128;
+    fn get_balance(&self, art: CID, owner_id: AccountId) -> U128;
+    fn get_allowance(&self, art: CID, owner_id: AccountId, escrow_account_id: AccountId) -> U128;
 }
 
-impl Default for DesignToken {
-    fn default() -> Self {
-        env::panic(b"The contract is not initialized.")
-    }
+pub trait TokenFactTrait {
+    fn create_token(&mut self, artwork: CID);
+}
+
+#[derive(BorshSerialize, BorshDeserialize)]
+pub struct Token {
+    artist: AccountId,
+    artwork: CID,
+    token: nep21::FungibleToken,
 }
 
 #[near_bindgen]
-impl DesignToken {
-    /// Init attribute used for instantiation.
+#[derive(BorshSerialize, BorshDeserialize)]
+pub struct FurBall {
+    total_supply_new_tok: U128,
+    artist_to_artist_cid: UnorderedMap<AccountId, CID>,
+    art_cid_to_token: UnorderedMap<CID, Token>,
+    art_cids: UnorderedSet<CID>,
+}
+
+/// Constructor implementation
+#[near_bindgen]
+impl FurBall {
     #[init]
-    pub fn new() -> Self {
-        // Useful snippet to copy/paste, making sure state isn't already initialized
-        assert!(env::state_read::<Self>().is_none(), "Already initialized");
-        // Note this is an implicit "return" here
-        Self {
-            design_hash: TreeMap::new(b"d".to_vec()),
-        }
-    }
-
-    // This functions changes state, so 1st param uses `&mut self`
-    /// Add a design hash
-    pub fn add_design(&mut self, upc: U128, design: String) {
-        let existing_design: Option<String> = self.design_hash.get(&upc.into());
-        if existing_design.is_some() {
-            env::panic(b"Sorry, already added this design.")
-        }
-        self.design_hash.insert(&upc.into(), &design);
-    }
-
-    // This functions simple returns state, so 1st param uses `&self`
-    /// Return the stored ipfs hash for a design
-    pub fn get_design(&self, upc: U128, account_id: String) -> String {
-        match self.design_hash.get(&upc.into()) {
-            Some(stored_design) => {
-                let log_message = format!("This design hash is {}", stored_design.clone());
-                env::log(log_message.as_bytes());
-                // found account user in map, return the hash
-                stored_design
-            },
-            // did not find the design
-            // note: curly brackets after arrow are optional in simple cases, like other languages
-            None => "No design found.".to_string()
-        }
-    }
-
-    /// Throw out all designs. (reset the data structure)
-    pub fn delete_all(&mut self) {
-        assert_eq!(env::current_account_id(), env::predecessor_account_id(), "To delete all designs, this method must be called by the (implied) contract owner.");
-        self.design_hash.clear();
-        env::log(b"All designs removed, time to sketch!");
+    pub fn new(owner_id: AccountId, total_supply_new_tok: U128) -> Self {
+        assert!(
+            env::is_valid_account_id(owner_id.as_bytes()),
+            "Owner's account ID is invalid."
+        );
+        assert!(!env::state_exists(), "Already initialized");
+        let fb = Self {
+            artist_to_artist_cid: UnorderedMap::new(b"artistCID-belongs-to".to_vec()),
+            art_cid_to_token: UnorderedMap::new(b"artCID-of-token".to_vec()),
+            art_cids: UnorderedSet::new(b"all-art-cids".to_vec()),
+            total_supply_new_tok,
+        };
+        fb
     }
 }
 
-/*
- * the rest of this file sets up unit tests
- * to run these, the command will be:
- * cargo test -- --nocapture
- */
+/// Private function implementation
+impl FurBall {
+    fn get_art(&self, art: &CID) -> Result<Token, Error> {
+        // TODO: err msg
+        self.art_cid_to_token
+            .get(&art)
+            .ok_or(Error::ArtCIDNotFound(art.to_string()))
+    }
+}
 
-// use the attribute below for unit tests
+#[near_bindgen]
+impl TokenFactTrait for FurBall {
+    #[payable]
+    fn create_token(&mut self, artwork: CID) {
+        assert!(
+            self.art_cid_to_token.get(&artwork).is_none(),
+            format!("Artwork with CID {} cannot already have a token", artwork)
+        );
+        assert!(
+            artwork.len() <= MAX_CID_LEN,
+            format!(
+                "Artwork CID must be shorter than {} characters",
+                MAX_CID_LEN
+            )
+        );
+        let tok = Token {
+            artist: env::predecessor_account_id(),
+            artwork: artwork.clone(),
+            token: nep21::FungibleToken::new(
+                env::predecessor_account_id(),
+                self.total_supply_new_tok,
+                artwork.clone()
+            ),
+        };
+        self.art_cid_to_token.insert(&artwork, &tok);
+    }
+}
+
+/// Add fungible token functionality for individual tokens
+#[near_bindgen]
+impl FungibleTokenTrait for FurBall {
+    #[payable]
+    fn inc_allowance(&mut self, art: CID, escrow_account_id: AccountId, amount: U128) {
+        let mut art_token = self.get_art(&art).unwrap();
+        art_token.token.inc_allowance(escrow_account_id, amount);
+    }
+    #[payable]
+    fn dec_allowance(&mut self, art: CID, escrow_account_id: AccountId, amount: U128) {
+        let mut art_token = self.get_art(&art).unwrap();
+        art_token.token.dec_allowance(escrow_account_id, amount);
+    }
+    #[payable]
+    fn transfer_from(
+        &mut self,
+        art: CID,
+        owner_id: AccountId,
+        new_owner_id: AccountId,
+        amount: U128,
+    ) {
+        let mut art_token = self.get_art(&art).unwrap();
+        art_token
+            .token
+            .transfer_from(owner_id, new_owner_id, amount);
+    }
+    #[payable]
+    fn transfer(&mut self, art: CID, new_owner_id: AccountId, amount: U128) {
+        let mut art_token = self.get_art(&art).unwrap();
+        art_token.token.transfer(new_owner_id, amount);
+    }
+    fn get_total_supply(&self, art: CID) -> U128 {
+        let art_token = self.get_art(&art).unwrap();
+        art_token.token.get_total_supply()
+    }
+
+    fn get_balance(&self, art: CID, owner_id: AccountId) -> U128 {
+        let art_token = self.get_art(&art).unwrap();
+        art_token.token.get_balance(owner_id)
+    }
+    fn get_allowance(&self, art: CID, owner_id: AccountId, escrow_account_id: AccountId) -> U128 {
+        let art_token = self.get_art(&art).unwrap();
+        art_token.token.get_allowance(owner_id, escrow_account_id)
+    }
+}
+
+#[cfg(not(target_arch = "wasm32"))]
 #[cfg(test)]
 mod tests {
-    use super::*;
     use near_sdk::MockedBlockchain;
-    use near_sdk::{testing_env, VMContext, AccountId};
+    use near_sdk::{testing_env, VMContext};
 
-    // part of writing unit tests is setting up a mock context
-    // this is also a useful list to peek at when wondering what's available in env::*
-    fn get_context(input: Vec<u8>, is_view: bool, predecessor: AccountId) -> VMContext {
+    use super::*;
+
+    fn alice() -> AccountId {
+        "alice.near".to_string()
+    }
+    fn bob() -> AccountId {
+        "bob.near".to_string()
+    }
+    fn carol() -> AccountId {
+        "carol.near".to_string()
+    }
+
+    fn get_context(predecessor_account_id: AccountId) -> VMContext {
         VMContext {
-            current_account_id: "alice.testnet".to_string(),
-            signer_account_id: "mike.testnet".to_string(),
+            current_account_id: alice(),
+            signer_account_id: bob(),
             signer_account_pk: vec![0, 1, 2],
-            predecessor_account_id: predecessor,
-            input,
+            predecessor_account_id,
+            input: vec![],
             block_index: 0,
             block_timestamp: 0,
-            account_balance: 0,
+            account_balance: 1_000_000_000_000_000_000_000_000_000u128,
             account_locked_balance: 0,
-            storage_usage: 0,
+            storage_usage: 10u64.pow(6),
             attached_deposit: 0,
             prepaid_gas: 10u64.pow(18),
             random_seed: vec![0, 1, 2],
-            is_view,
+            is_view: false,
             output_data_receivers: vec![],
-            epoch_height: 19,
+            epoch_height: 0,
         }
     }
 
-    // mark individual unit tests with #[test] for them to be registered and fired
-    // unlike other frameworks, the function names don't need to be special or have "test" in it
     #[test]
-    fn add_design_hash() {
-        // set up the mock context into the testing environment
-        let context = get_context(vec![], false, "robert.testnet".to_string());
+    fn test_initialize_2_new_tokens() {
+        let context = get_context(carol());
         testing_env!(context);
-        // instantiate a contract variable with the counter at zero
-        let mut contract = DesignToken::new();
-        let design_upc = U128(679508051007679508);
-        let ipfshash = "QmU5eQ66pWzCAKGCWwRdM33nXK99aX9k9rYRGGhmAw552n".to_string();
-        contract.add_design(design_upc.clone(), ipfshash.clone());
-        // we can do println! in tests, but reminder to use env::log outside of tests
-        let returned_ipfs = contract.get_design(design_upc);
-        println!("ipfs hash returned: {}", returned_ipfs.clone());
-        // confirm
-        assert_eq!(ipfshash, returned_ipfs);
+        let total_supply = 1_000_000_000_000_000u128;
+        let mut contract = FurBall::new(bob(), total_supply.into());
+
+        let art = "QmPAwR5un1YPJEF6iB7KvErDmAhiXxwL5J5qjA3Z9ceKqv".to_string();
+        contract.create_token(art.clone());
+        assert_eq!(contract.get_total_supply(art.clone()), total_supply.into());
+        assert_eq!(contract.get_balance(art, carol()).0, total_supply);
+
+        let art2 = "QqPAwR5un1YPJEF6iB7KvErDmAhiXxwL5J5qjA3Z9ceKqv".to_string();
+        contract.create_token(art2.clone());
+        // assert_eq!(contract.get_total_supply(art2.clone()), total_supply.into());
+        // assert_eq!(contract.get_balance(art2, carol()).0, total_supply);
     }
 
+    // TODO: this is not working and I have no clue why
+    // #[test]
+    // #[should_panic]
+    // fn test_initialize_new_furball_twice_fails() {
+    //     let context = get_context(carol());
+    //     testing_env!(context);
+    //     let total_supply = 1_000_000_000_000_000u128;
+    //     {
+    //         let _contract = FurBall::new(bob(), total_supply.into());
+    //     }
+    //     FurBall::new(bob(), total_supply.into());
+    // }
+
+    #[test]
+    #[should_panic]
+    fn test_initialize_coin_same_art_fails() {
+        let context = get_context(carol());
+        testing_env!(context);
+        let total_supply = 1_000_000_000_000_000u128;
+        let mut contract = FurBall::new(bob(), total_supply.into());
+        let art = "QmPAwR5un1YPJEF6iB7KvErDmAhiXxwL5J5qjA3Z9ceKqv".to_string();
+        let art_clone = art.clone();
+        contract.create_token(art);
+        contract.create_token(art_clone);
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_initialize_coin_cid_too_long() {
+        let context = get_context(carol());
+        testing_env!(context);
+        let total_supply = 1_000_000_000_000_000u128;
+        let mut contract = FurBall::new(bob(), total_supply.into());
+        let art = "QQmPAwR5un1YPJEF6iB7KvErDmAhiXxwL5J5qjA3Z9ceKqvQmPAwR5un1YPJEF6iB7KvErDmAhiXxwL5J5qjA3Z9ceKqvQmPAwR5un1YPJEF6iB7KvErDmAhiXxwL5J5qjA3Z9ceKqvmPAwR5un1YPJEF6iB7KvErDmAhiXxwL5J5qjA3Z9ceKqv".to_string();
+        contract.create_token(art);
+    }
 }
