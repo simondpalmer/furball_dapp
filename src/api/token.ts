@@ -1,4 +1,4 @@
-import { AccountID, CID } from "./interface";
+import { AccountID, CID } from "../interface";
 
 export async function getDesigns(artist: AccountID): Promise<CID[]> {
   return await (window.contract as any).get_designs({artist});

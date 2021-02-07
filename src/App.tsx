@@ -11,6 +11,7 @@ var Isotope = require("isotope-layout");
 
 import getConfig from "./config/config";
 import { createToken, getDesigns } from "./api/token";
+import { getProfile, upsertProfile } from "./db/ceramic";
 const { networkId } = getConfig(process.env.NODE_ENV || "development");
 
 export default function App() {
@@ -43,14 +44,17 @@ export default function App() {
   const [showNotification, setShowNotification] = useState(false);
 
   async function populateDesigns() {
-    const designs = await getDesigns(window.accountId)
-    setDesign(designs)
+    const designs = await getDesigns(window.accountId);
+    setDesign(designs);
+
+    await upsertProfile({ username: "Jo Mom" });
+    console.log(await getProfile());
   }
 
   useEffect(() => {
     // in this case, we only care to query the contract when signed in
     if (window.walletConnection.isSignedIn()) {
-      populateDesigns()
+      populateDesigns();
     }
   }, []);
 
