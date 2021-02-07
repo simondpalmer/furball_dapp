@@ -83477,7 +83477,7 @@ function getDesigns(artist) {
 
 exports.getDesigns = getDesigns;
 
-function createToken(artworkCID) {
+function createToken(artwork) {
   return __awaiter(this, void 0, void 0, function () {
     return __generator(this, function (_a) {
       switch (_a.label) {
@@ -83485,7 +83485,7 @@ function createToken(artworkCID) {
           return [4
           /*yield*/
           , window.contract.create_token({
-            artwork: "A Fake CID HERE"
+            artwork: artwork
           })];
 
         case 1:
