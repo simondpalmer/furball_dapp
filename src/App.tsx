@@ -10,6 +10,7 @@ import "react-bootstrap";
 var Isotope = require("isotope-layout");
 
 import getConfig from "./config/config";
+import { createToken, getDesigns } from "./api/token";
 const { networkId } = getConfig(process.env.NODE_ENV || "development");
 
 export default function App() {
@@ -41,16 +42,15 @@ export default function App() {
   // after submitting the form, we want to show Notification
   const [showNotification, setShowNotification] = useState(false);
 
-  useEffect(async () => {
+  async function populateDesigns() {
+    const designs = await getDesigns(window.accountId)
+    setDesign(designs)
+  }
+
+  useEffect(() => {
     // in this case, we only care to query the contract when signed in
     if (window.walletConnection.isSignedIn()) {
-      // window.contract is set by initContract in index.js
-      await window.contract.create_token({ artwork: "A Fake CID HERE"})
-      // window.contract
-      //   .create_token({ account_id: window.accountId })
-      //   .then(() => {
-      //     setDesign([]);
-      //   });
+      populateDesigns()
     }
   }, []);
 

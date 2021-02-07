@@ -63619,9 +63619,9 @@ function initContract() {
           /*yield*/
           , new near_api_js_1.Contract(window.walletConnection.account(), nearConfig.contractName, {
             // View methods are read only. They don't modify the state, but usually return some value.
-            viewMethods: ["get_total_supply", "get_allowance", "get_balance"],
+            viewMethods: ["get_total_supply", "get_allowance", "get_balance", "get_designs", "get_profile"],
             // Change methods can modify the state. But you don't receive the returned value when called.
-            changeMethods: ["transfer", "transfer_from", "dec_allowance", "inc_allowance", "create_token"]
+            changeMethods: ["transfer", "transfer_from", "dec_allowance", "inc_allowance", "create_token", "update_profile"]
           })];
 
         case 2:
@@ -83306,7 +83306,201 @@ var trim = String.prototype.trim ?
 
 }));
 
-},{"outlayer":"../node_modules/outlayer/outlayer.js","get-size":"../node_modules/get-size/get-size.js","desandro-matches-selector":"../node_modules/desandro-matches-selector/matches-selector.js","fizzy-ui-utils":"../node_modules/fizzy-ui-utils/utils.js","./item":"../node_modules/isotope-layout/js/item.js","./layout-mode":"../node_modules/isotope-layout/js/layout-mode.js","./layout-modes/masonry":"../node_modules/isotope-layout/js/layout-modes/masonry.js","./layout-modes/fit-rows":"../node_modules/isotope-layout/js/layout-modes/fit-rows.js","./layout-modes/vertical":"../node_modules/isotope-layout/js/layout-modes/vertical.js"}],"App.tsx":[function(require,module,exports) {
+},{"outlayer":"../node_modules/outlayer/outlayer.js","get-size":"../node_modules/get-size/get-size.js","desandro-matches-selector":"../node_modules/desandro-matches-selector/matches-selector.js","fizzy-ui-utils":"../node_modules/fizzy-ui-utils/utils.js","./item":"../node_modules/isotope-layout/js/item.js","./layout-mode":"../node_modules/isotope-layout/js/layout-mode.js","./layout-modes/masonry":"../node_modules/isotope-layout/js/layout-modes/masonry.js","./layout-modes/fit-rows":"../node_modules/isotope-layout/js/layout-modes/fit-rows.js","./layout-modes/vertical":"../node_modules/isotope-layout/js/layout-modes/vertical.js"}],"api/token.ts":[function(require,module,exports) {
+"use strict";
+
+var __awaiter = this && this.__awaiter || function (thisArg, _arguments, P, generator) {
+  function adopt(value) {
+    return value instanceof P ? value : new P(function (resolve) {
+      resolve(value);
+    });
+  }
+
+  return new (P || (P = Promise))(function (resolve, reject) {
+    function fulfilled(value) {
+      try {
+        step(generator.next(value));
+      } catch (e) {
+        reject(e);
+      }
+    }
+
+    function rejected(value) {
+      try {
+        step(generator["throw"](value));
+      } catch (e) {
+        reject(e);
+      }
+    }
+
+    function step(result) {
+      result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected);
+    }
+
+    step((generator = generator.apply(thisArg, _arguments || [])).next());
+  });
+};
+
+var __generator = this && this.__generator || function (thisArg, body) {
+  var _ = {
+    label: 0,
+    sent: function () {
+      if (t[0] & 1) throw t[1];
+      return t[1];
+    },
+    trys: [],
+    ops: []
+  },
+      f,
+      y,
+      t,
+      g;
+  return g = {
+    next: verb(0),
+    "throw": verb(1),
+    "return": verb(2)
+  }, typeof Symbol === "function" && (g[Symbol.iterator] = function () {
+    return this;
+  }), g;
+
+  function verb(n) {
+    return function (v) {
+      return step([n, v]);
+    };
+  }
+
+  function step(op) {
+    if (f) throw new TypeError("Generator is already executing.");
+
+    while (_) try {
+      if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
+      if (y = 0, t) op = [op[0] & 2, t.value];
+
+      switch (op[0]) {
+        case 0:
+        case 1:
+          t = op;
+          break;
+
+        case 4:
+          _.label++;
+          return {
+            value: op[1],
+            done: false
+          };
+
+        case 5:
+          _.label++;
+          y = op[1];
+          op = [0];
+          continue;
+
+        case 7:
+          op = _.ops.pop();
+
+          _.trys.pop();
+
+          continue;
+
+        default:
+          if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) {
+            _ = 0;
+            continue;
+          }
+
+          if (op[0] === 3 && (!t || op[1] > t[0] && op[1] < t[3])) {
+            _.label = op[1];
+            break;
+          }
+
+          if (op[0] === 6 && _.label < t[1]) {
+            _.label = t[1];
+            t = op;
+            break;
+          }
+
+          if (t && _.label < t[2]) {
+            _.label = t[2];
+
+            _.ops.push(op);
+
+            break;
+          }
+
+          if (t[2]) _.ops.pop();
+
+          _.trys.pop();
+
+          continue;
+      }
+
+      op = body.call(thisArg, _);
+    } catch (e) {
+      op = [6, e];
+      y = 0;
+    } finally {
+      f = t = 0;
+    }
+
+    if (op[0] & 5) throw op[1];
+    return {
+      value: op[0] ? op[1] : void 0,
+      done: true
+    };
+  }
+};
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.createToken = exports.getDesigns = void 0;
+
+function getDesigns(artist) {
+  return __awaiter(this, void 0, Promise, function () {
+    return __generator(this, function (_a) {
+      switch (_a.label) {
+        case 0:
+          return [4
+          /*yield*/
+          , window.contract.get_designs({
+            artist: artist
+          })];
+
+        case 1:
+          return [2
+          /*return*/
+          , _a.sent()];
+      }
+    });
+  });
+}
+
+exports.getDesigns = getDesigns;
+
+function createToken(artworkCID) {
+  return __awaiter(this, void 0, void 0, function () {
+    return __generator(this, function (_a) {
+      switch (_a.label) {
+        case 0:
+          return [4
+          /*yield*/
+          , window.contract.create_token({
+            artwork: "A Fake CID HERE"
+          })];
+
+        case 1:
+          _a.sent();
+
+          return [2
+          /*return*/
+          ];
+      }
+    });
+  });
+}
+
+exports.createToken = createToken;
+},{}],"App.tsx":[function(require,module,exports) {
 "use strict";
 
 var __createBinding = this && this.__createBinding || (Object.create ? function (o, m, k, k2) {
@@ -83508,12 +83702,12 @@ var Isotope = require("isotope-layout");
 
 var config_1 = __importDefault(require("./config/config"));
 
+var token_1 = require("./api/token");
+
 var networkId = config_1.default("development" || "development").networkId;
 
 function App() {
-  var _this = this; // use React Hooks to store design in component state
-
-
+  // use React Hooks to store design in component state
   var _a = react_1.useState(["#00b3ca", "#e38690", "#f69256", "#1d4e89", "#e38690", "#f69256", "#1d4e89", "#e38690", "#f69256", "#1d4e89"]),
       design = _a[0],
       setDesign = _a[1]; // when the user has not yet interacted with the form, disable the button
@@ -83542,39 +83736,32 @@ function App() {
       showNotification = _f[0],
       setShowNotification = _f[1];
 
-  react_1.useEffect(function () {
-    return __awaiter(_this, void 0, void 0, function () {
+  function populateDesigns() {
+    return __awaiter(this, void 0, void 0, function () {
+      var designs;
       return __generator(this, function (_a) {
         switch (_a.label) {
           case 0:
-            if (!window.walletConnection.isSignedIn()) return [3
-            /*break*/
-            , 2]; // window.contract is set by initContract in index.js
-
             return [4
             /*yield*/
-            , window.contract.create_token({
-              artwork: "A Fake CID HERE"
-            }) // window.contract
-            //   .create_token({ account_id: window.accountId })
-            //   .then(() => {
-            //     setDesign([]);
-            //   });
-            ];
+            , token_1.getDesigns(window.accountId)];
 
           case 1:
-            // window.contract is set by initContract in index.js
-            _a.sent();
-
-            _a.label = 2;
-
-          case 2:
+            designs = _a.sent();
+            setDesign(designs);
             return [2
             /*return*/
             ];
         }
       });
     });
+  }
+
+  react_1.useEffect(function () {
+    // in this case, we only care to query the contract when signed in
+    if (window.walletConnection.isSignedIn()) {
+      populateDesigns();
+    }
   }, []);
   react_1.useEffect(function () {
     var elem = document.querySelector("#visContainer");
@@ -83666,7 +83853,7 @@ function Notification() {
     href: urlPrefix + "/" + window.contract.contractId
   }, window.contract.contractId), react_1.default.createElement("footer", null, react_1.default.createElement("div", null, "\u2714 Succeeded"), react_1.default.createElement("div", null, "Just now")));
 }
-},{"regenerator-runtime/runtime":"../node_modules/regenerator-runtime/runtime.js","react":"../node_modules/react/index.js","jquery/dist/jquery.js":"../node_modules/jquery/dist/jquery.js","./utils":"utils.ts","./global.css":"global.css","react-bootstrap":"../node_modules/react-bootstrap/esm/index.js","isotope-layout":"../node_modules/isotope-layout/js/isotope.js","./config/config":"config/config.ts"}],"index.tsx":[function(require,module,exports) {
+},{"regenerator-runtime/runtime":"../node_modules/regenerator-runtime/runtime.js","react":"../node_modules/react/index.js","jquery/dist/jquery.js":"../node_modules/jquery/dist/jquery.js","./utils":"utils.ts","./global.css":"global.css","react-bootstrap":"../node_modules/react-bootstrap/esm/index.js","isotope-layout":"../node_modules/isotope-layout/js/isotope.js","./config/config":"config/config.ts","./api/token":"api/token.ts"}],"index.tsx":[function(require,module,exports) {
 "use strict";
 
 var __importDefault = this && this.__importDefault || function (mod) {
