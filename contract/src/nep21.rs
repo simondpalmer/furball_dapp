@@ -20,7 +20,7 @@ use near_sdk::borsh::{self, BorshDeserialize, BorshSerialize};
 use near_sdk::collections::UnorderedMap;
 use near_sdk::json_types::U128;
 use near_sdk::{env, AccountId, Balance, Promise, StorageUsage};
-use crate::account::{Account};
+use crate::{CID, account::{Account}};
 
 
 /// Price per 1 byte of storage from mainnet genesis config.
@@ -43,11 +43,10 @@ impl Default for FungibleToken {
 }
 
 impl FungibleToken {
-    pub fn new(owner_id: AccountId, total_supply: U128) -> Self {
+    pub fn new(owner_id: AccountId, total_supply: U128, artwork: CID) -> Self {
         let total_supply = total_supply.into();
-        assert!(!env::state_exists(), "Already initialized");
         let mut ft = Self {
-            accounts: UnorderedMap::new(b"a".to_vec()),
+            accounts: UnorderedMap::new(format!("{}-tok", artwork).into()),
             total_supply,
         };
         let mut account = ft.get_account(&owner_id);
@@ -288,21 +287,9 @@ mod tests {
         let context = get_context(carol());
         testing_env!(context);
         let total_supply = 1_000_000_000_000_000u128;
-        let contract = FungibleToken::new(bob(), total_supply.into());
+        let contract = FungibleToken::new(bob(), total_supply.into(), "AA".to_string());
         assert_eq!(contract.get_total_supply().0, total_supply);
         assert_eq!(contract.get_balance(bob()).0, total_supply);
-    }
-
-    #[test]
-    #[should_panic]
-    fn test_initialize_new_token_twice_fails() {
-        let context = get_context(carol());
-        testing_env!(context);
-        let total_supply = 1_000_000_000_000_000u128;
-        {
-            let _contract = FungibleToken::new(bob(), total_supply.into());
-        }
-        FungibleToken::new(bob(), total_supply.into());
     }
 
     #[test]
@@ -310,7 +297,7 @@ mod tests {
         let mut context = get_context(carol());
         testing_env!(context.clone());
         let total_supply = 1_000_000_000_000_000u128;
-        let mut contract = FungibleToken::new(carol(), total_supply.into());
+        let mut contract = FungibleToken::new(carol(), total_supply.into(), "Art-CID".to_string());
         context.storage_usage = env::storage_usage();
 
         context.attached_deposit = 1000 * STORAGE_PRICE_PER_BYTE;
@@ -336,7 +323,7 @@ mod tests {
         let mut context = get_context(carol());
         testing_env!(context.clone());
         let total_supply = 1_000_000_000_000_000u128;
-        let mut contract = FungibleToken::new(carol(), total_supply.into());
+        let mut contract = FungibleToken::new(carol(), total_supply.into(), "Art-CID".to_string());
         context.storage_usage = env::storage_usage();
 
         context.attached_deposit = 1000 * STORAGE_PRICE_PER_BYTE;
@@ -351,7 +338,7 @@ mod tests {
         let mut context = get_context(carol());
         testing_env!(context.clone());
         let total_supply = 1_000_000_000_000_000u128;
-        let mut contract = FungibleToken::new(carol(), total_supply.into());
+        let mut contract = FungibleToken::new(carol(), total_supply.into(), "Art-CID".to_string());
         context.attached_deposit = STORAGE_PRICE_PER_BYTE * 1000;
         testing_env!(context.clone());
         contract.inc_allowance(carol(), (total_supply / 2).into());
@@ -363,7 +350,7 @@ mod tests {
         let mut context = get_context(carol());
         testing_env!(context.clone());
         let total_supply = 1_000_000_000_000_000u128;
-        let mut contract = FungibleToken::new(carol(), total_supply.into());
+        let mut contract = FungibleToken::new(carol(), total_supply.into(), "Art-CID".to_string());
         context.attached_deposit = STORAGE_PRICE_PER_BYTE * 1000;
         testing_env!(context.clone());
         contract.dec_allowance(carol(), (total_supply / 2).into());
@@ -374,7 +361,7 @@ mod tests {
         let mut context = get_context(carol());
         testing_env!(context.clone());
         let total_supply = 1_000_000_000_000_000u128;
-        let mut contract = FungibleToken::new(carol(), total_supply.into());
+        let mut contract = FungibleToken::new(carol(), total_supply.into(), "Art-CID".to_string());
         context.attached_deposit = STORAGE_PRICE_PER_BYTE * 1000;
         testing_env!(context.clone());
         contract.dec_allowance(bob(), (total_supply / 2).into());
@@ -386,7 +373,7 @@ mod tests {
         let mut context = get_context(carol());
         testing_env!(context.clone());
         let total_supply = std::u128::MAX;
-        let mut contract = FungibleToken::new(carol(), total_supply.into());
+        let mut contract = FungibleToken::new(carol(), total_supply.into(), "Art-CID".to_string());
         context.attached_deposit = STORAGE_PRICE_PER_BYTE * 1000;
         testing_env!(context.clone());
         contract.inc_allowance(bob(), total_supply.into());
@@ -405,7 +392,7 @@ mod tests {
         let mut context = get_context(carol());
         testing_env!(context.clone());
         let total_supply = 1_000_000_000_000_000u128;
-        let mut contract = FungibleToken::new(carol(), total_supply.into());
+        let mut contract = FungibleToken::new(carol(), total_supply.into(), "Art-CID".to_string());
         context.attached_deposit = 0;
         testing_env!(context.clone());
         contract.inc_allowance(bob(), (total_supply / 2).into());
@@ -417,7 +404,7 @@ mod tests {
         let mut context = get_context(carol());
         testing_env!(context.clone());
         let total_supply = 1_000_000_000_000_000u128;
-        let mut contract = FungibleToken::new(carol(), total_supply.into());
+        let mut contract = FungibleToken::new(carol(), total_supply.into(), "Art-CID".to_string());
         context.storage_usage = env::storage_usage();
 
         context.is_view = true;
@@ -467,7 +454,7 @@ mod tests {
         let mut context = get_context(carol());
         testing_env!(context.clone());
         let total_supply = 1_000_000_000_000_000u128;
-        let mut contract = FungibleToken::new(carol(), total_supply.into());
+        let mut contract = FungibleToken::new(carol(), total_supply.into(), "Art-CID".to_string());
         context.storage_usage = env::storage_usage();
 
         context.is_view = true;
@@ -517,7 +504,7 @@ mod tests {
         let mut context = get_context(carol());
         testing_env!(context.clone());
         let total_supply = 1_000_000_000_000_000u128;
-        let mut contract = FungibleToken::new(carol(), total_supply.into());
+        let mut contract = FungibleToken::new(carol(), total_supply.into(), "Art-CID".to_string());
         context.storage_usage = env::storage_usage();
 
         let initial_balance = context.account_balance;

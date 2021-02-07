@@ -1,1 +1,0 @@
-{"rustc":6273248261564527691,"features":"[]","target":14372345708857017748,"profile":6299028598154287785,"path":13060314244342143218,"deps":[],"local":[{"CheckDepInfo":{"dep_info":"debug\\.fingerprint\\fake-simd-5dca66fd92869284\\dep-lib-fake-simd"}}],"rustflags":["-C","link-args=-s"],"metadata":738266917286170046,"config":0}

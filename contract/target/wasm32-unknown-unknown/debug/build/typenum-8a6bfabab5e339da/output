@@ -1,2 +1,0 @@
-cargo:rustc-env=TYPENUM_BUILD_CONSTS=C:\Users\Simon Palmer\Documents\Programming\ETHDenver 2021\furball-dapp\contract\target\wasm32-unknown-unknown\debug\build\typenum-8a6bfabab5e339da\out\consts.rs
-cargo:rustc-env=TYPENUM_BUILD_OP=C:\Users\Simon Palmer\Documents\Programming\ETHDenver 2021\furball-dapp\contract\target\wasm32-unknown-unknown\debug\build\typenum-8a6bfabab5e339da\out\op.rs

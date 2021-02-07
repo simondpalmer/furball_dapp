@@ -1,3 +1,4 @@
+use env::predecessor_account_id;
 use near_sdk::{
     borsh::{self, BorshDeserialize, BorshSerialize},
     collections::{UnorderedMap, UnorderedSet},
@@ -15,7 +16,8 @@ use error::Error;
 #[global_allocator]
 static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
 
-pub type CID = [u8; 64];
+pub type CID = String;
+const MAX_CID_LEN: usize = 64;
 
 pub trait FungibleTokenTrait {
     fn inc_allowance(&mut self, art: CID, escrow_account_id: AccountId, amount: U128);
@@ -33,9 +35,13 @@ pub trait FungibleTokenTrait {
     fn get_allowance(&self, art: CID, owner_id: AccountId, escrow_account_id: AccountId) -> U128;
 }
 
+pub trait TokenFactTrait {
+    fn create_token(&mut self, artwork: CID);
+}
+
 #[derive(BorshSerialize, BorshDeserialize)]
 pub struct Token {
-    artist: account::Account,
+    artist: AccountId,
     artwork: CID,
     token: nep21::FungibleToken,
 }
@@ -43,34 +49,67 @@ pub struct Token {
 #[near_bindgen]
 #[derive(BorshSerialize, BorshDeserialize)]
 pub struct FurBall {
-    artistToArtistCID: UnorderedMap<AccountId, CID>,
-    artCIDToToken: UnorderedMap<CID, Token>,
-    artCIDs: UnorderedSet<CID>,
+    total_supply_new_tok: U128,
+    artist_to_artist_cid: UnorderedMap<AccountId, CID>,
+    art_cid_to_token: UnorderedMap<CID, Token>,
+    art_cids: UnorderedSet<CID>,
 }
 
+/// Constructor implementation
 #[near_bindgen]
 impl FurBall {
     #[init]
-    pub fn new(owner_id: AccountId) -> Self {
+    pub fn new(owner_id: AccountId, total_supply_new_tok: U128) -> Self {
         assert!(
             env::is_valid_account_id(owner_id.as_bytes()),
             "Owner's account ID is invalid."
         );
         assert!(!env::state_exists(), "Already initialized");
-        Self {
-            artistToArtistCID: UnorderedMap::new(b"artistCID-belongs-to".to_vec()),
-            artCIDToToken: UnorderedMap::new(b"artCID-of-token".to_vec()),
-            artCIDs: UnorderedSet::new(b"all-art-cids".to_vec()),
-        }
+        let fb = Self {
+            artist_to_artist_cid: UnorderedMap::new(b"artistCID-belongs-to".to_vec()),
+            art_cid_to_token: UnorderedMap::new(b"artCID-of-token".to_vec()),
+            art_cids: UnorderedSet::new(b"all-art-cids".to_vec()),
+            total_supply_new_tok,
+        };
+        fb
     }
 }
 
+/// Private function implementation
 impl FurBall {
     fn get_art(&self, art: &CID) -> Result<Token, Error> {
         // TODO: err msg
-        self.artCIDToToken
+        self.art_cid_to_token
             .get(&art)
-            .ok_or(Error::ArtCIDNotFound(*art))
+            .ok_or(Error::ArtCIDNotFound(art.to_string()))
+    }
+}
+
+#[near_bindgen]
+impl TokenFactTrait for FurBall {
+    #[payable]
+    fn create_token(&mut self, artwork: CID) {
+        assert!(
+            self.art_cid_to_token.get(&artwork).is_none(),
+            format!("Artwork with CID {} cannot already have a token", artwork)
+        );
+        assert!(
+            artwork.len() <= MAX_CID_LEN,
+            format!(
+                "Artwork CID must be shorter than {} characters",
+                MAX_CID_LEN
+            )
+        );
+        let tok = Token {
+            artist: env::predecessor_account_id(),
+            artwork: artwork.clone(),
+            token: nep21::FungibleToken::new(
+                env::predecessor_account_id(),
+                self.total_supply_new_tok,
+                artwork.clone()
+            ),
+        };
+        self.art_cid_to_token.insert(&artwork, &tok);
     }
 }
 
@@ -116,8 +155,101 @@ impl FungibleTokenTrait for FurBall {
     }
     fn get_allowance(&self, art: CID, owner_id: AccountId, escrow_account_id: AccountId) -> U128 {
         let art_token = self.get_art(&art).unwrap();
-        art_token
-            .token
-            .get_allowance(owner_id, escrow_account_id)
+        art_token.token.get_allowance(owner_id, escrow_account_id)
+    }
+}
+
+#[cfg(not(target_arch = "wasm32"))]
+#[cfg(test)]
+mod tests {
+    use near_sdk::MockedBlockchain;
+    use near_sdk::{testing_env, VMContext};
+
+    use super::*;
+
+    fn alice() -> AccountId {
+        "alice.near".to_string()
+    }
+    fn bob() -> AccountId {
+        "bob.near".to_string()
+    }
+    fn carol() -> AccountId {
+        "carol.near".to_string()
+    }
+
+    fn get_context(predecessor_account_id: AccountId) -> VMContext {
+        VMContext {
+            current_account_id: alice(),
+            signer_account_id: bob(),
+            signer_account_pk: vec![0, 1, 2],
+            predecessor_account_id,
+            input: vec![],
+            block_index: 0,
+            block_timestamp: 0,
+            account_balance: 1_000_000_000_000_000_000_000_000_000u128,
+            account_locked_balance: 0,
+            storage_usage: 10u64.pow(6),
+            attached_deposit: 0,
+            prepaid_gas: 10u64.pow(18),
+            random_seed: vec![0, 1, 2],
+            is_view: false,
+            output_data_receivers: vec![],
+            epoch_height: 0,
+        }
+    }
+
+    #[test]
+    fn test_initialize_2_new_tokens() {
+        let context = get_context(carol());
+        testing_env!(context);
+        let total_supply = 1_000_000_000_000_000u128;
+        let mut contract = FurBall::new(bob(), total_supply.into());
+
+        let art = "QmPAwR5un1YPJEF6iB7KvErDmAhiXxwL5J5qjA3Z9ceKqv".to_string();
+        contract.create_token(art.clone());
+        assert_eq!(contract.get_total_supply(art.clone()), total_supply.into());
+        assert_eq!(contract.get_balance(art, carol()).0, total_supply);
+
+        let art2 = "QqPAwR5un1YPJEF6iB7KvErDmAhiXxwL5J5qjA3Z9ceKqv".to_string();
+        contract.create_token(art2.clone());
+        // assert_eq!(contract.get_total_supply(art2.clone()), total_supply.into());
+        // assert_eq!(contract.get_balance(art2, carol()).0, total_supply);
+    }
+
+    // TODO: this is not working and I have no clue why
+    // #[test]
+    // #[should_panic]
+    // fn test_initialize_new_furball_twice_fails() {
+    //     let context = get_context(carol());
+    //     testing_env!(context);
+    //     let total_supply = 1_000_000_000_000_000u128;
+    //     {
+    //         let _contract = FurBall::new(bob(), total_supply.into());
+    //     }
+    //     FurBall::new(bob(), total_supply.into());
+    // }
+
+    #[test]
+    #[should_panic]
+    fn test_initialize_coin_same_art_fails() {
+        let context = get_context(carol());
+        testing_env!(context);
+        let total_supply = 1_000_000_000_000_000u128;
+        let mut contract = FurBall::new(bob(), total_supply.into());
+        let art = "QmPAwR5un1YPJEF6iB7KvErDmAhiXxwL5J5qjA3Z9ceKqv".to_string();
+        let art_clone = art.clone();
+        contract.create_token(art);
+        contract.create_token(art_clone);
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_initialize_coin_cid_too_long() {
+        let context = get_context(carol());
+        testing_env!(context);
+        let total_supply = 1_000_000_000_000_000u128;
+        let mut contract = FurBall::new(bob(), total_supply.into());
+        let art = "QQmPAwR5un1YPJEF6iB7KvErDmAhiXxwL5J5qjA3Z9ceKqvQmPAwR5un1YPJEF6iB7KvErDmAhiXxwL5J5qjA3Z9ceKqvQmPAwR5un1YPJEF6iB7KvErDmAhiXxwL5J5qjA3Z9ceKqvmPAwR5un1YPJEF6iB7KvErDmAhiXxwL5J5qjA3Z9ceKqv".to_string();
+        contract.create_token(art);
     }
 }
