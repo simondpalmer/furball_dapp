@@ -1,3 +1,5 @@
+use std::vec;
+
 use env::predecessor_account_id;
 use near_sdk::{
     borsh::{self, BorshDeserialize, BorshSerialize},
@@ -40,7 +42,7 @@ pub trait TokenFactTrait {
 }
 
 pub trait DesignTrait {
-    fn get_designs(&self, artist: AccountId) -> UnorderedSet<CID>;
+    fn get_designs(&self, artist: AccountId) -> Vec<CID>;
 }
 
 pub trait Proile {
@@ -117,13 +119,13 @@ impl Proile for FurBall {
 
 #[near_bindgen]
 impl DesignTrait for FurBall {
-    fn get_designs(&self, artist: AccountId) -> UnorderedSet<CID> {
-        let mut designs: UnorderedSet<CID> = UnorderedSet::new(b"Designs".to_vec());
+    fn get_designs(&self, artist: AccountId) -> Vec<CID> {
+        let mut designs: Vec<CID> = Vec::new();
         println!("Art CID: {:?}", self.art_cids.to_vec());
-        for artCID in self.art_cids.iter() {
-            if let Some(token) = self.art_cid_to_token.get(&artCID) {
+        for art_cid in self.art_cids.iter() {
+            if let Some(token) = self.art_cid_to_token.get(&art_cid.clone()) {
                 if token.artist == artist {
-                    designs.insert(&artCID);
+                    designs.push(art_cid.clone());
                 }
             }
         }
