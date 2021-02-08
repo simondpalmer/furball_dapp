@@ -5,4 +5,7 @@ export interface UserProfile {
   username: string,
 }
 
-export interface ArtMetadata {}
+export interface ArtMetadata {
+  original: CID,
+  stegod: CID,
+}

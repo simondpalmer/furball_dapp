@@ -11,23 +11,21 @@ var Isotope = require("isotope-layout");
 
 import getConfig from "./config/config";
 import { createToken, getDesigns } from "./api/token";
-import { getProfile, upsertProfile } from "./db/ceramic";
+import {
+  artMetadataCIDToStegods,
+  createArtMetadata,
+  getArtMetadata,
+  getProfile,
+  uploadArt,
+  uploadArtStegod,
+  upsertProfile,
+} from "./db/ceramic";
+import { ArtMetadata } from "./interface";
 const { networkId } = getConfig(process.env.NODE_ENV || "development");
 
 export default function App() {
   // use React Hooks to store design in component state
-  const [design, setDesign] = useState([
-    "#00b3ca",
-    "#e38690",
-    "#f69256",
-    "#1d4e89",
-    "#e38690",
-    "#f69256",
-    "#1d4e89",
-    "#e38690",
-    "#f69256",
-    "#1d4e89",
-  ]);
+  const [artworks, setArtworks] = useState<(string | null)[] >([]);
 
   // when the user has not yet interacted with the form, disable the button
   const [buttonDisabled, setButtonDisabled] = useState(true);
@@ -43,12 +41,48 @@ export default function App() {
   // after submitting the form, we want to show Notification
   const [showNotification, setShowNotification] = useState(false);
 
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+
   async function populateDesigns() {
     const designs = await getDesigns(window.accountId);
-    setDesign(designs);
+    let proms: Promise<Uint8Array>[] = [];
+    for (let i = 0; i < designs.length; i++) {
+      proms.push(artMetadataCIDToStegods(designs[i]));
+    }
 
-    await upsertProfile({ username: "Jo Mom" });
-    console.log(await getProfile());
+    let srcBlobs = (await Promise.all(proms))
+      .map((buff) => {
+        try {
+          const blob = new Blob([new Uint8Array(buff, 0, buff.length)])
+          return URL.createObjectURL(blob);
+        } catch (e) {
+          console.error("Error parsing to URL", e);
+          return null;
+        }
+      })
+      .filter((it) => it != null);
+    setArtworks(srcBlobs);
+  }
+
+  async function uploadNewToken(e: React.FormEvent<HTMLFormElement>) {
+    // TODO: loading wheel
+    e.preventDefault();
+    if (!selectedFile) {
+      alert("Please upload a file");
+      return;
+    }
+    const bufOriginalFile = await (selectedFile as File).arrayBuffer();
+    // const bufFile = (e.target as any).files[0];
+    const originalCID = await uploadArt(new Uint8Array(bufOriginalFile));
+    // TODO: stego
+    const stegoCID = await uploadArtStegod(new Uint8Array(bufOriginalFile));
+    const artData: ArtMetadata = {
+      stegod: stegoCID,
+      original: originalCID,
+    };
+    const artDataCID = await createArtMetadata(artData);
+    await createToken(artDataCID);
+    alert("Uploaded!");
   }
 
   useEffect(() => {
@@ -118,8 +152,13 @@ export default function App() {
         <h1>{window.accountId} your designs are below. Enjoy!</h1>
         <div className="upload">
           <h2>Upload your designs here</h2>
-          <form>
-            <input type="file" onChange="" />
+          <form onSubmit={(e) => uploadNewToken(e)}>
+            <input
+              type="file"
+              onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
+              required
+            />
+
             <input type="submit" />
           </form>
           <div className="row">
@@ -131,7 +170,10 @@ export default function App() {
             </div>
             <div className="col-8">
               <div id="visContainer">
-                {design.map((design, key) => {
+                {artworks.map((url) => {
+                  return <img src={url} alt="" />;
+                })}
+                {/* {design.map((design, key) => {
                   return (
                     <div key={key} className="gridItem">
                       <div
@@ -143,7 +185,7 @@ export default function App() {
                       ></div>
                     </div>
                   );
-                })}
+                })} */}
               </div>
             </div>
           </div>
