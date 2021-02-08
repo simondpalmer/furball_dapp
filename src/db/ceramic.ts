@@ -5,7 +5,6 @@ import { getProfileId, getSeedOrNew, setProfileId } from "./local";
 
 export async function initCeramic() {
   const seed = new Uint8Array(await getSeedOrNew()); //  32 bytes with high entropy
-  console.log(seed, await getSeedOrNew())
   const provider = new Ed25519Provider(seed);
   await ceramic.setDIDProvider(provider);
 }
