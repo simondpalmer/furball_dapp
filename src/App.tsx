@@ -1,31 +1,22 @@
-import "regenerator-runtime/runtime";
-import React, { useState, useLayoutEffect, useEffect } from "react";
-import ipfs from "./ipfs";
 import "jquery/dist/jquery.js";
-import { login, logout } from "./utils";
-import { useScrollPosition } from "@n8tb1t/use-scroll-position";
-import "./global.css";
+import React, { useEffect, useState } from "react";
 import "react-bootstrap";
+import "regenerator-runtime/runtime";
+import stegasus from "../../stegasus/Cargo.toml";
+import { getDesigns } from "./api/token";
+import getConfig from "./config/config";
+import { artMetadataCIDToStegods } from "./db/ceramic";
+import "./global.css";
+import { login, logout } from "./utils";
+
 
 var Isotope = require("isotope-layout");
 
-import getConfig from "./config/config";
-import { createToken, getDesigns } from "./api/token";
-import {
-  artMetadataCIDToStegods,
-  createArtMetadata,
-  getArtMetadata,
-  getProfile,
-  uploadArt,
-  uploadArtStegod,
-  upsertProfile,
-} from "./db/ceramic";
-import { ArtMetadata } from "./interface";
 const { networkId } = getConfig(process.env.NODE_ENV || "development");
 
 export default function App() {
   // use React Hooks to store design in component state
-  const [artworks, setArtworks] = useState<(string | null)[] >([]);
+  const [artworks, setArtworks] = useState<(string | null)[]>([]);
 
   // when the user has not yet interacted with the form, disable the button
   const [buttonDisabled, setButtonDisabled] = useState(true);
@@ -73,15 +64,18 @@ export default function App() {
     }
     const bufOriginalFile = await (selectedFile as File).arrayBuffer();
     // const bufFile = (e.target as any).files[0];
-    const originalCID = await uploadArt(new Uint8Array(bufOriginalFile));
+    // const originalCID = await uploadArt(new Uint8Array(bufOriginalFile));
     // TODO: stego
-    const stegoCID = await uploadArtStegod(new Uint8Array(bufOriginalFile));
-    const artData: ArtMetadata = {
-      stegod: stegoCID,
-      original: originalCID,
-    };
-    const artDataCID = await createArtMetadata(artData);
-    await createToken(artDataCID);
+    console.log(new Uint8Array(bufOriginalFile));
+    const stegod = stegasus.encode_img(new Uint8Array(bufOriginalFile), new Uint8Array(Buffer.from("hello world")));
+    console.log(stegod);
+    // const stegoCID = await uploadArtStegod(new Uint8Array(bufOriginalFile));
+    // const artData: ArtMetadata = {
+    //   stegod: stegoCID,
+    //   original: originalCID,
+    // };
+    // const artDataCID = await createArtMetadata(artData);
+    // await createToken(artDataCID);
     alert("Uploaded!");
   }
 
