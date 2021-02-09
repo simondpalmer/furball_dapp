@@ -3,7 +3,9 @@ import React, { useEffect, useState } from "react";
 import "react-bootstrap";
 import "regenerator-runtime/runtime";
 import stegasus from "../../stegasus/Cargo.toml";
-import { getDesigns } from "./api/token";
+import { ArtMetadata } from "./interface"
+import { uploadArt, uploadArtStegod, createArtMetadata } from "./db/ceramic"
+import { getDesigns, createToken } from "./api/token";
 import getConfig from "./config/config";
 import { artMetadataCIDToStegods } from "./db/ceramic";
 import "./global.css";
@@ -64,20 +66,20 @@ export default function App() {
     }
     const bufOriginalFile = await (selectedFile as File).arrayBuffer();
     // const bufFile = (e.target as any).files[0];
-    // const originalCID = await uploadArt(new Uint8Array(bufOriginalFile));
+    const originalCID = await uploadArt(new Uint8Array(bufOriginalFile));
     // TODO: stego
     const stegMsg = "hello world";
     console.log(`stegoing message "${stegMsg}" into image`);
     const stegod = stegasus.encode_img(new Uint8Array(bufOriginalFile), new Uint8Array(Buffer.from(stegMsg)));
     const stegoMsgBuf = stegasus.decode_img(stegod);
     console.log(Buffer.from(stegoMsgBuf).toString())
-    // const stegoCID = await uploadArtStegod(new Uint8Array(bufOriginalFile));
-    // const artData: ArtMetadata = {
-    //   stegod: stegoCID,
-    //   original: originalCID,
-    // };
-    // const artDataCID = await createArtMetadata(artData);
-    // await createToken(artDataCID);
+    const stegoCID = await uploadArtStegod(new Uint8Array(bufOriginalFile));
+    const artData: ArtMetadata = {
+      stegod: stegoCID,
+      original: originalCID,
+    };
+    const artDataCID = await createArtMetadata(artData);
+    await createToken(artDataCID);
     alert("Uploaded!");
   }
 

@@ -1,17 +1,24 @@
 import CeramicClient from "@ceramicnetwork/http-client";
-import { Ed25519Provider } from "key-did-provider-ed25519";
 import { ArtMetadata, CID, UserProfile } from "../interface";
 import { getProfileId, getSeedOrNew, setProfileId } from "./local";
+import { Identity, Public } from "@textile/hub";
+import { NearWalletProvider } from "key-did-provider-ed25519";
 
-export async function initCeramic() {
-  const seed = new Uint8Array(await getSeedOrNew()); //  32 bytes with high entropy
-  const provider = new Ed25519Provider(seed);
-  await ceramic.setDIDProvider(provider);
-}
 
 // TODO: parse out into env, for now j using a dev node connection that gets wiped
 const API_URL = "https://ceramic-clay.3boxlabs.com";
 const ceramic = new CeramicClient(API_URL);
+
+export async function initCeramic() {
+	const accountId = window.accountId;
+	const networkId = window.walletConnection._networkId;
+	const keyPair = await window
+	    .walletConnection
+	    ._keyStore
+	    .getKey(networkId, accountId)
+	const provider = new NearWalletProvider(keyPair)
+	await ceramic.setDIDProvider(provider);
+}
 
 export async function upsertProfile(profile: UserProfile) {
   const profId = await getProfileId();
