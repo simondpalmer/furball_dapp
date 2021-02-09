@@ -66,9 +66,11 @@ export default function App() {
     // const bufFile = (e.target as any).files[0];
     // const originalCID = await uploadArt(new Uint8Array(bufOriginalFile));
     // TODO: stego
-    console.log(new Uint8Array(bufOriginalFile));
-    const stegod = stegasus.encode_img(new Uint8Array(bufOriginalFile), new Uint8Array(Buffer.from("hello world")));
-    console.log(stegod);
+    const stegMsg = "hello world";
+    console.log(`stegoing message "${stegMsg}" into image`);
+    const stegod = stegasus.encode_img(new Uint8Array(bufOriginalFile), new Uint8Array(Buffer.from(stegMsg)));
+    const stegoMsgBuf = stegasus.decode_img(stegod);
+    console.log(Buffer.from(stegoMsgBuf).toString())
     // const stegoCID = await uploadArtStegod(new Uint8Array(bufOriginalFile));
     // const artData: ArtMetadata = {
     //   stegod: stegoCID,
