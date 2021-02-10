@@ -1,31 +1,31 @@
 import 'regenerator-runtime/runtime'
 import React, { useState, useLayoutEffect, useEffect } from 'react'
-import ipfs from './ipfs'
+import * as artistService from './components/services/ArtistService'
 import 'jquery/dist/jquery.js';
-import { login, logout } from './utils'
-import { useScrollPosition } from '@n8tb1t/use-scroll-position'
-import './global.css'
+import { login, logout } from './utils';
+import './global.css';
 import 'react-bootstrap';
-
-var Isotope = require('isotope-layout');
+import { Grid } from '@material-ui/core';
+import { spacing } from '@material-ui/system';
+import { makeStyles } from '@material-ui/core/styles';
+import data from './testdata/data';
+import Header from './components/Header';
+import DesignCard from './components/DesignCard';
+import ArtistForm from './form/ArtistForm';
 
 import getConfig from './config'
 const { networkId } = getConfig(process.env.NODE_ENV || 'development')
 
+
 export default function App() {
   // use React Hooks to store design in component state
-  const [design, setDesign] = useState(["#00b3ca", "#e38690", "#f69256", "#1d4e89", "#e38690", "#f69256", "#1d4e89", "#e38690", "#f69256", "#1d4e89"])
+  const [designs, setDesigns] = useState([])
+  const [buffer, setBuffer] = useState(null)
 
   // when the user has not yet interacted with the form, disable the button
   const [buttonDisabled, setButtonDisabled] = useState(true)
 
-  // load in Isotope
-  const [isotope, setIsotope] = useState(null);
-
-  // manage scroll position
-  const [scrollPosition, setScrollPosition] = useState(0)
-
-  const [mainDesign, setMainDesign] = useState("#f69256")
+  const [mainDesign, setMainDesign] = useState([])
 
   // after submitting the form, we want to show Notification
   const [showNotification, setShowNotification] = useState(false)
@@ -44,30 +44,16 @@ export default function App() {
     },
     []
   )
-  
 
-  useEffect(() => {
-    const elem = document.querySelector('#visContainer')  
-      setIsotope(new Isotope( elem, {
-          itemSelector: '.gridItem',
-          layoutMode: 'masonry',
-          masonry: {
-            columnWidth: 200,
-            fitWidth: true
-          }
-        })
-      )
-    },[]);
-
-  //Load Furry images (ipfs hash)
-  //setFurries()
-
-  //Mint new furry tokens (ipfs hash)
-    //QmU5eQ66pWzCAKGCWwRdM33nXK99aX9k9rYRGGhmAw552n
-    // Example url: https://ipfs.infura.io/ipfs/QmU5eQ66pWzCAKGCWwRdM33nXK99aX9k9rYRGGhmAw552n
-
-
-  //Transfer ipfs images (ipfs hash)
+    useEffect(() => {
+      async function fetchData() {
+        setDesigns(() => data.map((data) => <DesignCard data={data}/>)
+        )
+      }
+      fetchData()
+      console.log(data)
+    }
+    ,[])
 
   // if not signed in, return early with sign-in prompt
   if (!window.walletConnection.isSignedIn()) {
@@ -101,33 +87,14 @@ export default function App() {
         Sign out
       </button>
       <main>
+      <Header />
         <h1>
           {window.accountId} your designs are below. Enjoy!
         </h1>
-        <div className="upload">
-        <h2>Upload your designs here</h2>
-         <form>
-           <input type='file' onChange=""/>
-           <input type='submit'/>
-         </form>
-         <div className="row">
-           <div className="col-4">
-             <div className="tokenXL" style={{backgroundColor: `${mainDesign}`}}></div>
-
-           </div>
-           <div className="col-8">
-           <div id="visContainer">
-           {design.map((design, key) => {
-             return (
-               <div key={key} className="gridItem">
-                 <div className="token" style={{ backgroundColor: design}} onClick={(e) => {setMainDesign(e.currentTarget.style.backgroundColor)}}></div>
-                 </div>
-             )
-           })}
-           </div>
-           </div>
-         </div>
-         </div>
+         <br></br>
+         <Grid container item xs={12} justify="space-between">
+         {designs}
+         </Grid>
       </main>
       {showNotification && <Notification />}
     </>
