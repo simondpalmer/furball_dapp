@@ -1,42 +1,43 @@
-import React,{useState, useEffect} from 'react'
-import { Grid, TextField, makeStyles, FormControl, FormLabel, RadioGroup, FormControlLabel, Radio } from '@material-ui/core'
-import { useForm, Form } from '../components/useForm';
-import Upload from '../components/controls/Upload';
-import Input from '../components/controls/Input';
+import { Grid } from '@material-ui/core';
+import React from 'react';
 import Button from '../components/controls/Button';
 import FeaturesSelect from '../components/controls/FeaturesSelect';
-import * as artistService from '../components/services/ArtistService';
 import FurryGroup from '../components/controls/FurryGroup';
+import Input from '../components/controls/Input';
+import Upload from '../components/controls/Upload';
+import * as artistService from '../components/services/ArtistService';
+import { Form, useForm } from '../components/useForm';
 
 const fursonaItems = [
-    {id:'musclefur', title:'Musclefur'},
-    {id:'fluffer', title:'Fluffer'},
-    {id:'other', title:'Other'},
+    { id: 'musclefur', title: 'Musclefur' },
+    { id: 'fluffer', title: 'Fluffer' },
+    { id: 'other', title: 'Other' },
 ]
 
 const initialFValues = {
     id: 0,
-    designTitle:"",
-    accountId:"",
-    designImageUrl:"",
-    designDescription:"",
-    designPrice:1,
-    designFursona:"other",
-    designFeatureId:"",
-    addedDate:new Date(),
-
+    designTitle: "",
+    accountId: "",
+    designImageUrl: "",
+    designDescription: "",
+    designPrice: 1,
+    designFursona: "other",
+    designFeatureId: "",
+    addedDate: new Date(),
 }
+
+
 export default function ArtistForm(props) {
     const { addOrEdit } = props
 
     const validate = (fieldValues = values) => {
-        let temp = {...errors}
-        if('designTitle' in fieldValues)  
-            temp.designTitle = fieldValues.designTitle?"":"give it a furry name"
-        if('designDescription' in fieldValues) 
-            temp.designDescription = fieldValues.designDescription?"":"give it a furry description"
-        if('designPrice' in fieldValues) 
-            temp.designPrice = fieldValues.designPrice?"":"name your price"
+        let temp = { ...errors }
+        if ('designTitle' in fieldValues)
+            temp.designTitle = fieldValues.designTitle ? "" : "give it a furry name"
+        if ('designDescription' in fieldValues)
+            temp.designDescription = fieldValues.designDescription ? "" : "give it a furry description"
+        if ('designPrice' in fieldValues)
+            temp.designPrice = fieldValues.designPrice ? "" : "name your price"
         setErrors({
             ...temp
         })
@@ -54,7 +55,7 @@ export default function ArtistForm(props) {
         resetForm
     } = useForm(initialFValues, true, validate);
 
-    const handleSubmit= e => {
+    const handleSubmit = e => {
         e.preventDefault()
         if (validate()) {
             addOrEdit(values, resetForm)
@@ -62,28 +63,28 @@ export default function ArtistForm(props) {
     }
 
     return (
-            <Form onSubmit={handleSubmit}>
+        <Form onSubmit={handleSubmit}>
             <Grid container>
                 <Grid item xs={6}>
                     <Input
-                    name="designTitle"
-                    label="Name"
-                    value={values.designTitle}
-                    onChange = {handleInputChange}
-                    error={errors.designTitle}
+                        name="designTitle"
+                        label="Name"
+                        value={values.designTitle}
+                        onChange={handleInputChange}
+                        error={errors.designTitle}
                     />
                     <Input
                         name="designDescription"
                         label="Description"
                         value={values.designDescription}
-                        onChange = {handleInputChange}
+                        onChange={handleInputChange}
                         error={errors.designDescription}
                     />
                     <Input
                         name="designPrice"
                         label="Price"
                         value={values.designPrice}
-                        onChange = {handleInputChange}
+                        onChange={handleInputChange}
                         error={errors.designPrice}
                     />
                 </Grid>
@@ -92,33 +93,32 @@ export default function ArtistForm(props) {
                         name="designFursona"
                         label="Fursona"
                         value={values.designFursona}
-                        onChange={handleInputChange} 
+                        onChange={handleInputChange}
                         items={fursonaItems}
-                    /> 
+                    />
                     <FeaturesSelect
                         name="designFeatureId"
                         label="Features"
-                        value={values.designFeatureId}
-                        onChange={handleInputChange} 
-                        options={artistService.getfeatureCollection()} 
+                        onChange={handleInputChange}
+                        options={artistService.getfeatureCollection()}
                     />
-                    <Upload 
+                    <Upload
                         name="designImageUrl"
                         label="Image"
-                        value = {values.designImageUrl}
-                        onChange={handleInputChange} 
-                    />   
+                        onUploadComplete={onOriginalUploadComplete}
+                        onChange={handleInputChange}
+                    />
                     <div>
-                        <Button 
-                        type="submit"
-                        text="Submit" />
-                        <Button 
-                        text="Reset"
-                        color="default"
-                        onClick={resetForm} />
-                    </div>            
+                        <Button
+                            type="submit"
+                            text="Submit" />
+                        <Button
+                            text="Reset"
+                            color="default"
+                            onClick={resetForm} />
+                    </div>
                 </Grid>
             </Grid>
-            </Form>
+        </Form>
     )
 }

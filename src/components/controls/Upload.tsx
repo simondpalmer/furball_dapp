@@ -1,14 +1,14 @@
-import React, { useEffect, useState } from 'react';
+import React, { CSSProperties, useEffect, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 
-const thumbsContainer = {
+const thumbsContainer: CSSProperties = {
   display: 'flex',
   flexDirection: 'row',
   flexWrap: 'wrap',
   marginTop: 16
 };
 
-const thumb = {
+const thumb: CSSProperties = {
   display: 'inline-flex',
   borderRadius: 2,
   border: '1px solid #eaeaea',
@@ -32,29 +32,41 @@ const img = {
   height: '100%'
 };
 
-export default function Upload(props) {
-  const { name, label, value } = props
-  const [buffer, setBuffer] = useState([]);
-  const [files, setFiles] = useState([]);
+interface UploadProps {
+  uploadText: string;
+  onBufferComplete: (buf: Buffer) => Promise<void>;
+}
+
+export default function Upload(props: UploadProps) {
+  const { uploadText, onBufferComplete } = props
+  const [buffer, setBuffer] = useState<Buffer | null>();
+  const [files, setFiles] = useState<File[]>([]);
 
   const IPFS = require('ipfs-api');
 
   const { getRootProps, getInputProps } = useDropzone({
     accept: 'image/jpeg, image/png',
     maxFiles: 1,
-    onDrop: acceptedFiles => {
+    onDrop: <T extends File>(acceptedFiles: T[]) => {
       setFiles(acceptedFiles.map(file => Object.assign(file, {
         preview: URL.createObjectURL(file)
       })));
       const reader = new window.FileReader()
       reader.readAsArrayBuffer(acceptedFiles[0])
       reader.onloadend = () => {
-        setBuffer(Buffer(reader.result))
+        if (!reader.result) {
+          throw new Error("failed to read image into buffer!")
+        }
+        if (typeof reader.result == "string") {
+          setBuffer(Buffer.from(reader.result))
+        } else {
+          setBuffer(Buffer.from(reader.result))
+        }
       };
     }
   });
 
-  const thumbs = files.map(file => (
+  const thumbs = files.map((file: any) => (
     <div style={thumb} key={file.name}>
       <div style={thumbInner}>
         <img
@@ -67,26 +79,16 @@ export default function Upload(props) {
 
   //Upload to Ipfs
   useEffect(() => {
-    const ipfs = new IPFS({ host: 'ipfs.infura.io', port: 5001, protocol: 'https' });
-    ipfs.files.add(buffer, (error, result) => {
-      console.log('Ipfs result', result)
-      value = 'https://ipfs.infura.io/ipfs/' + result[0].hash
-    })
+    if (buffer) {
+      onBufferComplete(buffer)
+    }
   }, [buffer])
-
-  useEffect(() => () => {
-    // Make sure to revoke the data uris to avoid memory leaks
-    files.forEach(file => URL.revokeObjectURL(file.preview));
-  }, [files]);
-
-
-  console.log(value)
 
   return (
     <section className="container">
       <div {...getRootProps({ className: 'dropzone' })}>
         <input {...getInputProps()} />
-        <p>Drag 'n' drop file here, or click to select file</p>
+        <p>{uploadText}</p>
         <em>(Only 1 *.jpeg or *.png image will be accepted)</em>
       </div>
       <aside style={thumbsContainer}>

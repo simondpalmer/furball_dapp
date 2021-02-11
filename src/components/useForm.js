@@ -1,27 +1,27 @@
-import React,{ useState } from 'react'
-import { makeStyles } from '@material-ui/core'
+import { makeStyles } from '@material-ui/core';
+import React, { useState } from 'react';
 
-export function useForm(initialFValues, validateOnChange=false, validate) {
+export function useForm(initialFValues, validateOnChange = false, validate) {
 
-    const [values,setValues] = useState(initialFValues);
-    const [errors,setErrors] = useState({});
+    const [values, setValues] = useState(initialFValues);
+    const [errors, setErrors] = useState({});
 
     const handleInputChange = e => {
         const { name, value } = e.target
         setValues({
             ...values,
-            [name]:value
+            [name]: value
         })
-        if(validateOnChange)
-        validate({ [name]:value })
+        if (validateOnChange)
+            validate({ [name]: value })
     }
 
-    const resetForm =()=> {
+    const resetForm = () => {
         setValues(initialFValues);
         setErrors({})
     }
 
-    return{
+    return {
         values,
         setValues,
         errors,
@@ -37,15 +37,15 @@ const useStyles = makeStyles(theme => ({
             width: '80%',
             margin: theme.spacing(1)
         }
-    }  
+    }
 }))
 
 export function Form(props) {
 
     const classes = useStyles()
-    const {children, ...other} = props
+    const { children, ...other } = props
 
-    return(
+    return (
         <form className={classes.root} {...other}>
             {props.children}
         </form>
