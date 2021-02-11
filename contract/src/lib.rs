@@ -256,8 +256,7 @@ mod tests {
     fn test_update_artist_profile() {
         let context = get_context(carol());
         testing_env!(context);
-        let total_supply = 1_000_000_000_000_000u128;
-        let mut contract = FurBall::new(bob(), total_supply.into());
+        let mut contract = FurBall::new();
 
         contract.update_profile("MY Profile CID".to_string());
         assert_eq!(contract.get_profile(carol()), "MY Profile CID");
@@ -267,27 +266,22 @@ mod tests {
     fn test_initialize_2_new_tokens() {
         let context = get_context(carol());
         testing_env!(context);
-        let total_supply = 1_000_000_000_000_000u128;
-        let mut contract = FurBall::new(bob(), total_supply.into());
+        let mut contract = FurBall::new();
 
         let art = "QmPAwR5un1YPJEF6iB7KvErDmAhiXxwL5J5qjA3Z9ceKqv".to_string();
         contract.create_token(art.clone());
-        assert_eq!(contract.get_total_supply(art.clone()), total_supply.into());
-        assert_eq!(contract.get_balance(art, carol()).0, total_supply);
+
         let art2 = "QqPAwR5un1YPJEF6iB7KvErDmAhiXxwL5J5qjA3Z9ceKqv".to_string();
 
         contract.create_token(art2.clone());
-        assert_eq!(contract.get_total_supply(art2.clone()), total_supply.into());
-        assert_eq!(contract.get_balance(art2, carol()).0, total_supply);
     }
 
     #[test]
     fn test_get_artist_designs() {
         let context = get_context(carol());
         testing_env!(context);
-        let total_supply = 1_000_000_000_000_000u128;
 
-        let mut contract = FurBall::new(bob(), total_supply.into());
+        let mut contract = FurBall::new();
         let art = "QmPAwR5un1YPJEF6iB7KvErDmAhiXxwL5J5qjA3Z9ceKqv".to_string();
         contract.create_token(art.clone());
 
@@ -320,8 +314,7 @@ mod tests {
     fn test_initialize_coin_same_art_fails() {
         let context = get_context(carol());
         testing_env!(context);
-        let total_supply = 1_000_000_000_000_000u128;
-        let mut contract = FurBall::new(bob(), total_supply.into());
+        let mut contract = FurBall::new();
         let art = "QmPAwR5un1YPJEF6iB7KvErDmAhiXxwL5J5qjA3Z9ceKqv".to_string();
         let art_clone = art.clone();
         contract.create_token(art);
@@ -333,8 +326,7 @@ mod tests {
     fn test_initialize_coin_cid_too_long() {
         let context = get_context(carol());
         testing_env!(context);
-        let total_supply = 1_000_000_000_000_000u128;
-        let mut contract = FurBall::new(bob(), total_supply.into());
+        let mut contract = FurBall::new();
         let art = "QQmPAwR5un1YPJEF6iB7KvErDmAhiXxwL5J5qjA3Z9ceKqvQmPAwR5un1YPJEF6iB7KvErDmAhiXxwL5J5qjA3Z9ceKqvQmPAwR5un1YPJEF6iB7KvErDmAhiXxwL5J5qjA3Z9ceKqvmPAwR5un1YPJEF6iB7KvErDmAhiXxwL5J5qjA3Z9ceKqv".to_string();
         contract.create_token(art);
     }

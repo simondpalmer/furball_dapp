@@ -1,6 +1,5 @@
-import { PausePresentationSharp } from '@material-ui/icons';
-import React, {useEffect, useState} from 'react';
-import {useDropzone} from 'react-dropzone';
+import React, { useEffect, useState } from 'react';
+import { useDropzone } from 'react-dropzone';
 
 const thumbsContainer = {
   display: 'flex',
@@ -32,7 +31,7 @@ const img = {
   width: 'auto',
   height: '100%'
 };
-     
+
 export default function Upload(props) {
   const { name, label, value } = props
   const [buffer, setBuffer] = useState([]);
@@ -40,9 +39,9 @@ export default function Upload(props) {
 
   const IPFS = require('ipfs-api');
 
-  const {getRootProps, getInputProps} = useDropzone({
+  const { getRootProps, getInputProps } = useDropzone({
     accept: 'image/jpeg, image/png',
-    maxFiles:1,
+    maxFiles: 1,
     onDrop: acceptedFiles => {
       setFiles(acceptedFiles.map(file => Object.assign(file, {
         preview: URL.createObjectURL(file)
@@ -73,7 +72,7 @@ export default function Upload(props) {
       console.log('Ipfs result', result)
       value = 'https://ipfs.infura.io/ipfs/' + result[0].hash
     })
-  },[buffer])
+  }, [buffer])
 
   useEffect(() => () => {
     // Make sure to revoke the data uris to avoid memory leaks
@@ -85,7 +84,7 @@ export default function Upload(props) {
 
   return (
     <section className="container">
-      <div {...getRootProps({className: 'dropzone'})}>
+      <div {...getRootProps({ className: 'dropzone' })}>
         <input {...getInputProps()} />
         <p>Drag 'n' drop file here, or click to select file</p>
         <em>(Only 1 *.jpeg or *.png image will be accepted)</em>
