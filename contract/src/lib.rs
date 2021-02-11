@@ -424,6 +424,31 @@ mod tests {
 
     #[test]
     #[should_panic]
+    fn test_buy_more_than_on_sale() {
+        let mut context = get_context(carol());
+        testing_env!(context.clone());
+        let total_supply = 1_000_000_000_000_000u128;
+        let mut contract = FurBall::new(bob(), total_supply.into());
+        let art = "QmPAwR5un1YPJEF6iB7KvErDmAhiXxwL5J5qjA3Z9ceKqv".to_string();
+        contract.create_token(art.clone());
+        contract.put_on_sale(art.clone(), 100);
+        assert_eq!(
+            contract.get_amount_on_sale(art.clone(), carol()).0,
+            100
+        );
+        contract.change_cost(art.clone(), 100);
+        assert_eq!(contract.cost_per_token(art.clone()), 100);
+
+        assert_eq!(contract.get_balance(art.clone(), bob()).0, 0);
+
+        context.attached_deposit = 1_000 * 100;
+        context.predecessor_account_id = bob();
+        testing_env!(context.clone());
+        contract.buy(art.clone(), 1_000, carol());
+    }
+
+    #[test]
+    #[should_panic]
     fn test_change_tok_cost_unauth() {
         let context = get_context(carol());
         testing_env!(context);

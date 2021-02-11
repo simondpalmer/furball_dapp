@@ -107,7 +107,6 @@ impl FungibleToken {
         amount: U128,
     ) {
         let escrow_account_id = env::current_account_id();
-        println!("AASASAS");
         self._transfer_from(owner_id, new_owner_id, escrow_account_id, amount);
     }
 
