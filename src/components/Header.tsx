@@ -9,7 +9,6 @@ import AddBox from '@material-ui/icons/AddBox';
 import ArtistForm from '../form/ArtistForm';
 import Button from './controls/Button';
 import Popup from './Popup';
-import * as artistService from '../components/services/ArtistService';
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -33,7 +32,7 @@ export default function MenuAppBar(props) {
   const open = Boolean(anchorEl);
 
   const addOrEdit = (design, resetForm) => {
-    artistService.insertArtwork(design)
+    // artistService.insertArtwork(design)
     resetForm() 
     setOpenPopup(false) 
   }

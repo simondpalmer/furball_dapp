@@ -1,5 +1,4 @@
 import { Grid } from "@material-ui/core";
-import "jquery/dist/jquery.js";
 import React, { useEffect, useState } from "react";
 import "react-bootstrap";
 import "regenerator-runtime/runtime";
@@ -165,7 +164,7 @@ export default function App() {
         </h1>
         <br></br>
         <Grid container item xs={12} justify="space-between">
-          {designs}
+          {/* {designs} */}
         </Grid>
       </main>
       {showNotification && <Notification />}

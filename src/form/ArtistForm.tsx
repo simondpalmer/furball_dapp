@@ -5,7 +5,6 @@ import FeaturesSelect from '../components/controls/FeaturesSelect';
 import FurryGroup from '../components/controls/FurryGroup';
 import Input from '../components/controls/Input';
 import Upload from '../components/controls/Upload';
-import * as artistService from '../components/services/ArtistService';
 import { Form, useForm } from '../components/useForm';
 
 const fursonaItems = [
@@ -100,12 +99,12 @@ export default function ArtistForm(props) {
                         name="designFeatureId"
                         label="Features"
                         onChange={handleInputChange}
-                        options={artistService.getfeatureCollection()}
+                        // options={artistService.getfeatureCollection()}
                     />
                     <Upload
                         name="designImageUrl"
                         label="Image"
-                        onUploadComplete={onOriginalUploadComplete}
+                        // onUploadComplete={onOriginalUploadComplete}
                         onChange={handleInputChange}
                     />
                     <div>

@@ -9,7 +9,7 @@ const useStyles = makeStyles(theme => ({
         textTransform: 'none'
     }   
 }))
-export default function Button(props) {
+export default function Button(props: any) {
     const {text, size, color, variant, onClick, ...other} = props;
     const classes = useStyles();
 

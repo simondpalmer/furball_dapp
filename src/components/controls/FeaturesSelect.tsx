@@ -1,7 +1,7 @@
 import React from 'react'
 import { FormControl, InputLabel, MenuItem, Select } from '@material-ui/core'
 
-export default function FeaturesSelect(props) {
+export default function FeaturesSelect(props: any) {
     const {name, label, value, onChange, options} = props;
     return(
         <FormControl
@@ -14,9 +14,9 @@ export default function FeaturesSelect(props) {
                 onChange={onChange}>
                     <MenuItem value="">None</MenuItem>
                     {
-                        options.map(
-                            item => (<MenuItem key={item.id} value={item.id}>{item.title}</MenuItem>)
-                        )
+                        // options.map(
+                        //     item => (<MenuItem key={item.id} value={item.id}>{item.title}</MenuItem>)
+                        // )
                     }
             </Select>
         </FormControl>
