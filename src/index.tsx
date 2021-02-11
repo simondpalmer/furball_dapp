@@ -15,8 +15,9 @@ declare global {
 }
 
 (window as any).nearInitPromise = initContract()
-    .then(() => {
-      ReactDOM.render(<App />, document.querySelector("#root"));
-    })
-    .then(initCeramic)
-    .catch(console.error)
+  .then(() => {
+    ReactDOM.render(<App />, document.querySelector("#root"));
+    console.log(window.contract)
+  })
+  .then(initCeramic)
+  .catch(console.error)

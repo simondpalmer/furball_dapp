@@ -3,12 +3,11 @@ import React, { useEffect, useState } from "react";
 import "react-bootstrap";
 import "regenerator-runtime/runtime";
 import stegasus from "../../stegasus/Cargo.toml";
-import { ArtMetadata } from "./interface"
-import { uploadArt, uploadArtStegod, createArtMetadata } from "./db/ceramic"
-import { getDesigns, createToken } from "./api/token";
+import { createToken, getDesigns, getDesignTokens } from "./api/token";
 import getConfig from "./config/config";
-import { artMetadataCIDToStegods } from "./db/ceramic";
+import { artMetadataCIDToStegods, createArtMetadata, uploadArt, uploadArtStegod } from "./db/ceramic";
 import "./global.css";
+import { ArtMetadata, ArtTokenBalance } from "./interface";
 import { login, logout } from "./utils";
 
 
@@ -19,6 +18,9 @@ const { networkId } = getConfig(process.env.NODE_ENV || "development");
 export default function App() {
   // use React Hooks to store design in component state
   const [artworks, setArtworks] = useState<(string | null)[]>([]);
+
+  // balances of art tokens
+  const [balances, setBalances] = useState<ArtTokenBalance[]>()
 
   // when the user has not yet interacted with the form, disable the button
   const [buttonDisabled, setButtonDisabled] = useState(true);
@@ -35,6 +37,9 @@ export default function App() {
   const [showNotification, setShowNotification] = useState(false);
 
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+
+  // optionally reference other artworks that this artwork is "based" on
+  const [bases, setBases] = useState<string[]>([]);
 
   async function populateDesigns() {
     const designs = await getDesigns(window.accountId);
@@ -57,6 +62,11 @@ export default function App() {
     setArtworks(srcBlobs);
   }
 
+  async function updateTokenBalances() {
+    const balances = await getDesignTokens(window.accountId);
+    setBalances(balances);
+  }
+
   async function uploadNewToken(e: React.FormEvent<HTMLFormElement>) {
     // TODO: loading wheel
     e.preventDefault();
@@ -74,19 +84,25 @@ export default function App() {
     const stegoMsgBuf = stegasus.decode_img(stegod);
     console.log(Buffer.from(stegoMsgBuf).toString())
     const stegoCID = await uploadArtStegod(new Uint8Array(bufOriginalFile));
+
     const artData: ArtMetadata = {
       stegod: stegoCID,
       original: originalCID,
+      bases: bases.length === 0 ? undefined : bases
     };
     const artDataCID = await createArtMetadata(artData);
     await createToken(artDataCID);
     alert("Uploaded!");
+    setBases([])
+    setSelectedFile(null)
+    await updateTokenBalances()
   }
 
   useEffect(() => {
     // in this case, we only care to query the contract when signed in
     if (window.walletConnection.isSignedIn()) {
       populateDesigns();
+      updateTokenBalances();
     }
   }, []);
 
@@ -150,6 +166,7 @@ export default function App() {
         <h1>{window.accountId} your designs are below. Enjoy!</h1>
         <div className="upload">
           <h2>Upload your designs here</h2>
+          // TODO: allow linking of bases from tokens you own
           <form onSubmit={(e) => uploadNewToken(e)}>
             <input
               type="file"
