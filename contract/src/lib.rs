@@ -1,7 +1,10 @@
+<<<<<<< HEAD
 use std::{u128, vec};
 
 use account::Account;
 use env::{predecessor_account_id, storage_usage};
+=======
+>>>>>>> master
 use near_sdk::{
     borsh::{self, BorshDeserialize, BorshSerialize},
     collections::{UnorderedMap, UnorderedSet},
@@ -9,7 +12,6 @@ use near_sdk::{
     json_types::U128,
     near_bindgen, wee_alloc, AccountId, Promise,
 };
-
 mod account;
 mod config;
 mod error;
@@ -61,6 +63,7 @@ pub trait TokenFactTrait {
 
 pub trait DesignTrait {
     fn get_designs(&self, artist: AccountId) -> Vec<CID>;
+    fn get_design_tokens(&self, user: AccountId) -> Vec<(CID, U128)>;
 }
 
 pub trait Proile {
@@ -86,11 +89,9 @@ pub struct FurBall {
     art_cids: UnorderedSet<CID>,
 }
 
-#[near_bindgen]
 impl Default for FurBall {
-    #[init]
     fn default() -> Self {
-        FurBall::new(env::predecessor_account_id(), 1_000_000_000.into())
+        panic!("FurBall must be intialized before use!")
     }
 }
 
@@ -98,7 +99,9 @@ impl Default for FurBall {
 #[near_bindgen]
 impl FurBall {
     #[init]
-    pub fn new(owner_id: AccountId, total_supply_new_tok: U128) -> Self {
+    pub fn new() -> Self {
+        let owner_id = env::predecessor_account_id();
+        let total_supply_new_tok = 1_000_000_000.into();
         assert!(
             env::is_valid_account_id(owner_id.as_bytes()),
             "Owner's account ID is invalid."
@@ -199,15 +202,28 @@ impl Proile for FurBall {
 #[near_bindgen]
 impl DesignTrait for FurBall {
     fn get_designs(&self, artist: AccountId) -> Vec<CID> {
+<<<<<<< HEAD
         let mut designs: Vec<CID> = Vec::new();
+=======
+        let mut designs = Vec::new();
+>>>>>>> master
         for art_cid in self.art_cids.iter() {
-            if let Some(token) = self.art_cid_to_token.get(&art_cid.clone()) {
+            if let Some(token) = self.art_cid_to_token.get(&art_cid) {
                 if token.artist == artist {
                     designs.push(art_cid.clone());
                 }
             }
         }
-        return designs;
+        designs
+    }
+    fn get_design_tokens(&self, user: AccountId) -> Vec<(CID, U128)> {
+        let mut designs = Vec::new();
+        for (art_cid, token) in self.art_cid_to_token.iter() {
+            if let Some(account) = token.token.accounts.get(&env::sha256(user.as_bytes())) {
+                designs.push((art_cid.clone(), account.balance.into()));
+            }
+        }
+        designs
     }
 }
 
@@ -339,8 +355,7 @@ mod tests {
     fn test_update_artist_profile() {
         let context = get_context(carol());
         testing_env!(context);
-        let total_supply = 1_000_000_000_000_000u128;
-        let mut contract = FurBall::new(bob(), total_supply.into());
+        let mut contract = FurBall::new();
 
         contract.update_profile("MY Profile CID".to_string());
         assert_eq!(contract.get_profile(carol()), "MY Profile CID");
@@ -350,27 +365,22 @@ mod tests {
     fn test_initialize_2_new_tokens() {
         let context = get_context(carol());
         testing_env!(context);
-        let total_supply = 1_000_000_000_000_000u128;
-        let mut contract = FurBall::new(bob(), total_supply.into());
+        let mut contract = FurBall::new();
 
         let art = "QmPAwR5un1YPJEF6iB7KvErDmAhiXxwL5J5qjA3Z9ceKqv".to_string();
         contract.create_token(art.clone());
-        assert_eq!(contract.get_total_supply(art.clone()), total_supply.into());
-        assert_eq!(contract.get_balance(art, carol()).0, total_supply);
+
         let art2 = "QqPAwR5un1YPJEF6iB7KvErDmAhiXxwL5J5qjA3Z9ceKqv".to_string();
 
         contract.create_token(art2.clone());
-        assert_eq!(contract.get_total_supply(art2.clone()), total_supply.into());
-        assert_eq!(contract.get_balance(art2, carol()).0, total_supply);
     }
 
     #[test]
     fn test_get_artist_designs() {
         let context = get_context(carol());
         testing_env!(context);
-        let total_supply = 1_000_000_000_000_000u128;
 
-        let mut contract = FurBall::new(bob(), total_supply.into());
+        let mut contract = FurBall::new();
         let art = "QmPAwR5un1YPJEF6iB7KvErDmAhiXxwL5J5qjA3Z9ceKqv".to_string();
         contract.create_token(art.clone());
 
@@ -521,8 +531,7 @@ mod tests {
     fn test_initialize_coin_same_art_fails() {
         let context = get_context(carol());
         testing_env!(context);
-        let total_supply = 1_000_000_000_000_000u128;
-        let mut contract = FurBall::new(bob(), total_supply.into());
+        let mut contract = FurBall::new();
         let art = "QmPAwR5un1YPJEF6iB7KvErDmAhiXxwL5J5qjA3Z9ceKqv".to_string();
         let art_clone = art.clone();
         contract.create_token(art);
@@ -534,8 +543,7 @@ mod tests {
     fn test_initialize_coin_cid_too_long() {
         let context = get_context(carol());
         testing_env!(context);
-        let total_supply = 1_000_000_000_000_000u128;
-        let mut contract = FurBall::new(bob(), total_supply.into());
+        let mut contract = FurBall::new();
         let art = "QQmPAwR5un1YPJEF6iB7KvErDmAhiXxwL5J5qjA3Z9ceKqvQmPAwR5un1YPJEF6iB7KvErDmAhiXxwL5J5qjA3Z9ceKqvQmPAwR5un1YPJEF6iB7KvErDmAhiXxwL5J5qjA3Z9ceKqvmPAwR5un1YPJEF6iB7KvErDmAhiXxwL5J5qjA3Z9ceKqv".to_string();
         contract.create_token(art);
     }

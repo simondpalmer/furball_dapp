@@ -14,10 +14,10 @@ declare global {
   }
 }
 
-(window as any).nearInitPromise = initCeramic().then(() =>
-  initContract()
-    .then(() => {
-      ReactDOM.render(<App />, document.querySelector("#root"));
-    })
-    .catch(console.error)
-);
+(window as any).nearInitPromise = initContract()
+  .then(() => {
+    ReactDOM.render(<App />, document.querySelector("#root"));
+    console.log(window.contract)
+  })
+  .then(initCeramic)
+  .catch(console.error)

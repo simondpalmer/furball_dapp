@@ -1,5 +1,9 @@
 // The following comes from: https://github.com/near-examples/FT/blob/master/contracts/rust/src/lib.rs
+<<<<<<< HEAD
 use crate::{account::Account, refund_storage::refund_storage, CID};
+=======
+use crate::{account::Account, CID};
+>>>>>>> master
 /**
 * Fungible Token implementation with JSON serialization.
 * NOTES:
@@ -20,7 +24,14 @@ use crate::{account::Account, refund_storage::refund_storage, CID};
 use near_sdk::borsh::{self, BorshDeserialize, BorshSerialize};
 use near_sdk::collections::UnorderedMap;
 use near_sdk::json_types::U128;
+<<<<<<< HEAD
 use near_sdk::{env, AccountId, Balance};
+=======
+use near_sdk::{env, AccountId, Balance, Promise, StorageUsage};
+
+/// Price per 1 byte of storage from mainnet genesis config.
+const STORAGE_PRICE_PER_BYTE: Balance = 100000000000000000000;
+>>>>>>> master
 
 #[derive(BorshDeserialize, BorshSerialize)]
 pub struct FungibleToken {

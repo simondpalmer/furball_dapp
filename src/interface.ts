@@ -8,4 +8,10 @@ export interface UserProfile {
 export interface ArtMetadata {
   original: CID,
   stegod: CID,
+  bases?: CID[]
+}
+
+export interface ArtTokenBalance {
+  artworkCID: CID,
+  amount: number,
 }
