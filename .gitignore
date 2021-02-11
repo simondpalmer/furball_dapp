@@ -5,7 +5,6 @@
 /.pnp
 .pnp.js
 /out
-
 #keys
 /neardev
 
@@ -29,6 +28,6 @@ yarn-error.log*
 
 # near
 contract/target
-
 .cache
 dist
+bucket

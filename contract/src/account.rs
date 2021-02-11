@@ -1,6 +1,6 @@
 use near_sdk::borsh::{self, BorshDeserialize, BorshSerialize};
 use near_sdk::collections::UnorderedMap;
-use near_sdk::{env, AccountId, Balance, Promise, StorageUsage};
+use near_sdk::{env, AccountId, Balance};
 /// Contains balance and allowances information for one account.
 #[derive(BorshDeserialize, BorshSerialize)]
 pub struct Account {
