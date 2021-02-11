@@ -396,10 +396,17 @@ mod tests {
         let mut context = get_context(carol());
         testing_env!(context.clone());
         let total_supply = 1_000_000_000_000_000u128;
+        let carol_init_bal = env::account_balance();
         let mut contract = FurBall::new(bob(), total_supply.into());
         let art = "QmPAwR5un1YPJEF6iB7KvErDmAhiXxwL5J5qjA3Z9ceKqv".to_string();
         contract.create_token(art.clone());
         contract.put_on_sale(art.clone(), 1_000_000);
+        assert_eq!(
+            contract
+                .get_allowance(art.clone(), carol(), env::current_account_id())
+                .0,
+            1_000_000
+        );
         assert_eq!(
             contract.get_amount_on_sale(art.clone(), carol()).0,
             1_000_000
@@ -413,13 +420,21 @@ mod tests {
         context.predecessor_account_id = bob();
         testing_env!(context.clone());
         contract.buy(art.clone(), 1_000, carol());
-
         context.account_balance = env::account_balance();
         context.storage_usage = env::storage_usage();
+
         context.is_view = true;
         context.attached_deposit = 0;
         testing_env!(context.clone());
+        assert_eq!(
+            contract.get_balance(art.clone(), carol()).0,
+            total_supply - 1_000u128
+        );
         assert_eq!(contract.get_balance(art.clone(), bob()).0, 1_000u128);
+
+        context.predecessor_account_id = carol();
+        testing_env!(context);
+        assert_eq!(env::account_balance() - carol_init_bal, 1_000 * 100);
     }
 
     #[test]
@@ -432,10 +447,7 @@ mod tests {
         let art = "QmPAwR5un1YPJEF6iB7KvErDmAhiXxwL5J5qjA3Z9ceKqv".to_string();
         contract.create_token(art.clone());
         contract.put_on_sale(art.clone(), 100);
-        assert_eq!(
-            contract.get_amount_on_sale(art.clone(), carol()).0,
-            100
-        );
+        assert_eq!(contract.get_amount_on_sale(art.clone(), carol()).0, 100);
         contract.change_cost(art.clone(), 100);
         assert_eq!(contract.cost_per_token(art.clone()), 100);
 
