@@ -1,19 +1,13 @@
-import 'regenerator-runtime/runtime'
-import React, { useState, useLayoutEffect, useEffect } from 'react'
-import * as artistService from './components/services/ArtistService'
-import 'jquery/dist/jquery.js';
-import { login, logout } from './utils';
-import './global.css';
-import 'react-bootstrap';
 import { Grid } from '@material-ui/core';
-import { spacing } from '@material-ui/system';
-import { makeStyles } from '@material-ui/core/styles';
-import data from './testdata/data';
+import 'jquery/dist/jquery.js';
+import React, { useState } from 'react';
+import 'react-bootstrap';
+import 'regenerator-runtime/runtime';
 import Header from './components/Header';
-import DesignCard from './components/DesignCard';
-import ArtistForm from './form/ArtistForm';
+import getConfig from './config';
+import './global.css';
+import { login, logout } from './utils';
 
-import getConfig from './config'
 const { networkId } = getConfig(process.env.NODE_ENV || 'development')
 
 
@@ -29,31 +23,6 @@ export default function App() {
 
   // after submitting the form, we want to show Notification
   const [showNotification, setShowNotification] = useState(false)
-
-  useEffect(
-    () => {
-      // in this case, we only care to query the contract when signed in
-      if (window.walletConnection.isSignedIn()) {
-
-        // window.contract is set by initContract in index.js
-        window.contract.get_design({ account_id: window.accountId })
-          .then(designFromContract => {
-            setDesign(designFromContract)
-          })
-      }
-    },
-    []
-  )
-
-    useEffect(() => {
-      async function fetchData() {
-        setDesigns(() => data.map((data) => <DesignCard data={data}/>)
-        )
-      }
-      fetchData()
-      console.log(data)
-    }
-    ,[])
 
   // if not signed in, return early with sign-in prompt
   if (!window.walletConnection.isSignedIn()) {
@@ -87,14 +56,14 @@ export default function App() {
         Sign out
       </button>
       <main>
-      <Header />
+        <Header />
         <h1>
           {window.accountId} your designs are below. Enjoy!
         </h1>
-         <br></br>
-         <Grid container item xs={12} justify="space-between">
-         {designs}
-         </Grid>
+        <br></br>
+        <Grid container item xs={12} justify="space-between">
+          {designs}
+        </Grid>
       </main>
       {showNotification && <Notification />}
     </>

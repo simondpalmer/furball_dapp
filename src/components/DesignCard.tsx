@@ -1,12 +1,12 @@
-import React from 'react';
-import { makeStyles } from '@material-ui/core/styles';
+import Button from '@material-ui/core/Button';
 import Card from '@material-ui/core/Card';
 import CardActionArea from '@material-ui/core/CardActionArea';
 import CardActions from '@material-ui/core/CardActions';
 import CardContent from '@material-ui/core/CardContent';
 import CardMedia from '@material-ui/core/CardMedia';
-import Button from '@material-ui/core/Button';
+import { makeStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
+import React from 'react';
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -18,8 +18,16 @@ const useStyles = makeStyles((theme) => ({
   }
 }));
 
-export default function ImgMediaCard(props) {
-  const {data} = props
+interface DesignCardProps {
+  designImageUrl: string;
+  designName: string;
+  designDescription: string;
+  designFursona: string;
+  designFeatureId: string;
+  designValue: string;
+}
+
+export default function Designcard(props: DesignCardProps) {
   const classes = useStyles();
 
   return (
@@ -29,23 +37,23 @@ export default function ImgMediaCard(props) {
           component="img"
           alt="Fursona"
           height="350"
-          image={data.designImageUrl}
+          image={props.designImageUrl}
           title="Fursona"
         />
         <CardContent>
           <Typography gutterBottom variant="h5" component="h2">
-            {data.designName}
+            {props.designName}
           </Typography>
           <Typography>
-          {data.designDescription}
+            {props.designDescription}
             <Typography variant="body2" color="textSecondary" component="p">
-            {data.designFursona}
+              {props.designFursona}
             </Typography>
             <Typography variant="body2" color="textSecondary" component="p">
-            {data.designFeatureId}
+              {props.designFeatureId}
             </Typography>
             <Typography>
-            ${data.designValue}
+              ${props.designValue}
             </Typography>
           </Typography>
         </CardContent>

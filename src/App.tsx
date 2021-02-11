@@ -98,6 +98,10 @@ export default function App() {
     await updateTokenBalances()
   }
 
+  async function fetchData() {
+    const proms = artworks.map((artwork: string) => <DesignCard data={string} />))
+  }
+
   useEffect(() => {
     // in this case, we only care to query the contract when signed in
     if (window.walletConnection.isSignedIn()) {
@@ -120,14 +124,6 @@ export default function App() {
     );
   }, []);
 
-  //Load Furry images (ipfs hash)
-  //setFurries()
-
-  //Mint new furry tokens (ipfs hash)
-  //QmU5eQ66pWzCAKGCWwRdM33nXK99aX9k9rYRGGhmAw552n
-  // Example url: https://ipfs.infura.io/ipfs/QmU5eQ66pWzCAKGCWwRdM33nXK99aX9k9rYRGGhmAw552n
-
-  //Transfer ipfs images (ipfs hash)
 
   // if not signed in, return early with sign-in prompt
   if (!window.walletConnection.isSignedIn()) {
@@ -135,80 +131,44 @@ export default function App() {
       <main>
         <h1>Welcome to FurBall</h1>
         <p>
-          To add your images you need to sign in. The button below will sign you
-          in using NEAR Wallet.
+          To add your images you need to sign in. The button
+          below will sign you in using NEAR Wallet.
         </p>
         <p>
-          By default, when your app runs in "development" mode, it connects to a
-          test network ("testnet") wallet. This works just like the main network
-          ("mainnet") wallet, but the NEAR Tokens on testnet aren't convertible
-          to other currencies – they're just for testing!
+          By default, when your app runs in "development" mode, it connects
+          to a test network ("testnet") wallet. This works just like the main
+          network ("mainnet") wallet, but the NEAR Tokens on testnet aren't
+          convertible to other currencies – they're just for testing!
         </p>
-        <p>Go ahead and click the button below to try it out:</p>
-        <p style={{ textAlign: "center", marginTop: "2.5em" }}>
+        <p>
+          Go ahead and click the button below to try it out:
+        </p>
+        <p style={{ textAlign: 'center', marginTop: '2.5em' }}>
           <button onClick={login}>Sign in</button>
         </p>
       </main>
-    );
+    )
   }
 
   return (
     // use React Fragment, <>, to avoid wrapping elements in unnecessary divs
     <>
-      <button
-        className="link"
-        style={{ position: "fixed", float: "right" }}
-        onClick={logout}
-      >
+      <button className="link" style={{ position: 'fixed', float: 'right' }} onClick={logout}>
         Sign out
       </button>
       <main>
-        <h1>{window.accountId} your designs are below. Enjoy!</h1>
-        <div className="upload">
-          <h2>Upload your designs here</h2>
-          // TODO: allow linking of bases from tokens you own
-          <form onSubmit={(e) => uploadNewToken(e)}>
-            <input
-              type="file"
-              onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
-              required
-            />
-
-            <input type="submit" />
-          </form>
-          <div className="row">
-            <div className="col-4">
-              <div
-                className="tokenXL"
-                style={{ backgroundColor: `${mainDesign}` }}
-              ></div>
-            </div>
-            <div className="col-8">
-              <div id="visContainer">
-                {artworks.map((url) => {
-                  return <img src={url} alt="" />;
-                })}
-                {/* {design.map((design, key) => {
-                  return (
-                    <div key={key} className="gridItem">
-                      <div
-                        className="token"
-                        style={{ backgroundColor: design }}
-                        onClick={(e) => {
-                          setMainDesign(e.currentTarget.style.backgroundColor);
-                        }}
-                      ></div>
-                    </div>
-                  );
-                })} */}
-              </div>
-            </div>
-          </div>
-        </div>
+        <Header />
+        <h1>
+          {window.accountId} your designs are below. Enjoy!
+        </h1>
+        <br></br>
+        <Grid container item xs={12} justify="space-between">
+          {designs}
+        </Grid>
       </main>
       {showNotification && <Notification />}
     </>
-  );
+  )
 }
 
 // this component gets rendered by App after the form is submitted
