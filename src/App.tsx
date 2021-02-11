@@ -98,9 +98,9 @@ export default function App() {
     await updateTokenBalances()
   }
 
-  async function fetchData() {
-    const proms = artworks.map((artwork: string) => <DesignCard data={string} />))
-  }
+  // async function fetchData() {
+  //   const proms = artworks.map((artwork: string) => <DesignCard data={string} />))
+  // }
 
   useEffect(() => {
     // in this case, we only care to query the contract when signed in
@@ -146,7 +146,7 @@ export default function App() {
         <p style={{ textAlign: 'center', marginTop: '2.5em' }}>
           <button onClick={login}>Sign in</button>
         </p>
-      </main>
+      </main >
     )
   }
 

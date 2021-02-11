@@ -5,8 +5,8 @@ import CardActions from '@material-ui/core/CardActions';
 import CardContent from '@material-ui/core/CardContent';
 import CardMedia from '@material-ui/core/CardMedia';
 import { makeStyles } from '@material-ui/core/styles';
-import Typography from '@material-ui/core/Typography';
 import React from 'react';
+import { ArtMetadata } from '../interface';
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -18,16 +18,13 @@ const useStyles = makeStyles((theme) => ({
   }
 }));
 
-interface DesignCardProps {
-  designImageUrl: string;
-  designName: string;
-  designDescription: string;
-  designFursona: string;
-  designFeatureId: string;
-  designValue: string;
+interface ArtCardProps {
+  artImgURL: string;
+  artMetadata: ArtMetadata
 }
 
-export default function Designcard(props: DesignCardProps) {
+export default function ArtCard(props: ArtCardProps) {
+  let { artImgURL, artMetadata } = props;
   const classes = useStyles();
 
   return (
@@ -37,11 +34,11 @@ export default function Designcard(props: DesignCardProps) {
           component="img"
           alt="Fursona"
           height="350"
-          image={props.designImageUrl}
+          image={artImgURL}
           title="Fursona"
         />
         <CardContent>
-          <Typography gutterBottom variant="h5" component="h2">
+          {/* <Typography gutterBottom variant="h5" component="h2">
             {props.designName}
           </Typography>
           <Typography>
@@ -55,7 +52,7 @@ export default function Designcard(props: DesignCardProps) {
             <Typography>
               ${props.designValue}
             </Typography>
-          </Typography>
+          </Typography> */}
         </CardContent>
       </CardActionArea>
       <CardActions>
