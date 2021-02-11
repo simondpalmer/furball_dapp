@@ -1,9 +1,11 @@
+import { Grid } from "@material-ui/core";
 import "jquery/dist/jquery.js";
 import React, { useEffect, useState } from "react";
 import "react-bootstrap";
 import "regenerator-runtime/runtime";
 import stegasus from "../../stegasus/Cargo.toml";
 import { createToken, getDesigns, getDesignTokens } from "./api/token";
+import Header from "./components/Header";
 import getConfig from "./config/config";
 import { artMetadataCIDToStegods, createArtMetadata, uploadArt, uploadArtStegod } from "./db/ceramic";
 import "./global.css";
