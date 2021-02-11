@@ -4,6 +4,7 @@ import ReactDOM from "react-dom";
 import App from "./App";
 import { initCeramic } from "./db/ceramic";
 import { initContract } from "./utils";
+import {initIPFS} from './ipfs'
 
 declare global {
   interface Window {
@@ -11,6 +12,7 @@ declare global {
     walletConnection: WalletConnection;
     accountId: any;
     contract: Contract;
+    ipfs: any
   }
 }
 
@@ -18,6 +20,6 @@ declare global {
   .then(() => {
     ReactDOM.render(<App />, document.querySelector("#root"));
     console.log(window.contract)
-  })
+  }).then(initIPFS)
   .then(initCeramic)
   .catch(console.error)

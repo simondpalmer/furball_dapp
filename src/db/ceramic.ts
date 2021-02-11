@@ -5,7 +5,8 @@ import { getProfileId, setProfileId } from "./local";
 
 
 // TODO: parse out into env, for now j using a dev node connection that gets wiped
-const API_URL = "http://localhost:7007";
+// const API_URL = "http://localhost:7007";
+const API_URL = "https://gateway-clay.ceramic.network"
 const ceramic = new CeramicClient(API_URL);
 
 export async function initCeramic() {
@@ -17,6 +18,7 @@ export async function initCeramic() {
     .getKey(networkId, accountId)
   const provider = new NearWalletProvider(keyPair)
   await ceramic.setDIDProvider(provider);
+  // console.log(await uploadBlob(new Uint8Array([121])))
 }
 
 export async function upsertProfile(profile: UserProfile) {

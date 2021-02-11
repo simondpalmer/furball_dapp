@@ -34,7 +34,7 @@ const img = {
 
 interface UploadProps {
   uploadText: string;
-  onBufferComplete: (buf: Buffer) => Promise<void>;
+  onBufferComplete: (buf: Buffer) => void;
 }
 
 export default function Upload(props: UploadProps) {
@@ -42,10 +42,8 @@ export default function Upload(props: UploadProps) {
   const [buffer, setBuffer] = useState<Buffer | null>();
   const [files, setFiles] = useState<File[]>([]);
 
-  const IPFS = require('ipfs-api');
-
   const { getRootProps, getInputProps } = useDropzone({
-    accept: 'image/jpeg, image/png',
+    accept: 'image/png',
     maxFiles: 1,
     onDrop: <T extends File>(acceptedFiles: T[]) => {
       setFiles(acceptedFiles.map(file => Object.assign(file, {
