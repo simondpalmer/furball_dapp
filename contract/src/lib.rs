@@ -1,10 +1,5 @@
-<<<<<<< HEAD
-use std::{u128, vec};
+use std::{u128};
 
-use account::Account;
-use env::{predecessor_account_id, storage_usage};
-=======
->>>>>>> master
 use near_sdk::{
     borsh::{self, BorshDeserialize, BorshSerialize},
     collections::{UnorderedMap, UnorderedSet},
@@ -202,11 +197,7 @@ impl Proile for FurBall {
 #[near_bindgen]
 impl DesignTrait for FurBall {
     fn get_designs(&self, artist: AccountId) -> Vec<CID> {
-<<<<<<< HEAD
         let mut designs: Vec<CID> = Vec::new();
-=======
-        let mut designs = Vec::new();
->>>>>>> master
         for art_cid in self.art_cids.iter() {
             if let Some(token) = self.art_cid_to_token.get(&art_cid) {
                 if token.artist == artist {
