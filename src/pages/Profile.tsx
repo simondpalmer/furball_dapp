@@ -4,6 +4,7 @@ import { getDesigns, getDesignTokens } from "../api/token";
 import { artMetadataCIDToStegods } from "../db/ceramic";
 import { ArtTokenBalance } from "../interface";
 
+
 export function Profile() {
   const auth = window.walletConnection.isSignedIn();
   useEffect(() => {
@@ -42,8 +43,8 @@ export function Profile() {
     let srcBlobs = (await Promise.all(proms))
       .map((buff) => {
         try {
-          const blob = new Blob([new Uint8Array(buff, 0, buff.length)]);
-          return URL.createObjectURL(blob);
+          const blob = new Blob([buff], { type: "image/png" });
+          return URL.createObjectURL(blob)
         } catch (e) {
           console.error("Error parsing to URL", e);
           return null;
@@ -66,12 +67,12 @@ export function Profile() {
     }
   }, []);
 
+
   return (
     <>
       <h1>{window.accountId} your designs are below. Enjoy!</h1>
       <br></br>
       <Grid container item xs={12} justify="space-between">
-        {artworks}
       </Grid>
     </>
   )
