@@ -33,7 +33,7 @@ export function Lookup(props: LookupProps) {
     accept: "image/png",
     onDropAccepted: (files, _e) => {
       const reader = new FileReader()
-      reader.readAsArrayBuffer(acceptedFiles[0])
+      reader.readAsArrayBuffer(files[0])
       reader.onloadend = () => {
         if (!reader.result) {
           throw new Error("failed to read image into buffer!")
