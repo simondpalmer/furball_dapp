@@ -18,18 +18,33 @@ export function Artwork() {
 
   return (
     <>
-      <Grid container direction="column" alignItems="center">
+      <Grid
+        container
+        direction="column"
+        alignItems="center"
+        style={{ position: "relative" }}
+      >
         <h2>Artwork</h2>
         <img
-          style={{ maxWidth: "800px" }}
+          style={{ maxWidth: "800px", margin: "1rem" }}
           src={CIDToUrl(metaData?.stegod)}
           alt=""
           srcset=""
         />
-        <div className="actions">
-          <Button color="primary">Buy</Button>
-          <Button color="primary">Sell</Button>
-        </div>
+        <Grid
+          container
+          className="actions"
+          justify="space-around"
+          direction="row"
+          style={{ width: "100%" }}
+        >
+          <Button variant="contained" color="primary">
+            Buy
+          </Button>
+          <Button variant="contained" color="primary">
+            Sell
+          </Button>
+        </Grid>
       </Grid>
     </>
   );
