@@ -12,6 +12,10 @@ export async function getDesignTokens(user: AccountID): Promise<ArtTokenBalance[
   }));
 }
 
-export async function createToken(artwork: CID) {
-  await (window.contract as any).create_token({ artwork });
+export async function getArtworkCidFromOriginalCid(original: CID): Promise<CID | null> {
+  return await (window.contract as any).get_artwork_cid_of_original_cid({ original_cid: original })
+}
+
+export async function createToken(artwork: CID, original: CID) {
+  await (window.contract as any).create_token({ artwork, original });
 }

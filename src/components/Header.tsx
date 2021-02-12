@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
-import { makeStyles } from '@material-ui/core/styles';
 import AppBar from '@material-ui/core/AppBar';
+import IconButton from '@material-ui/core/IconButton';
+import { makeStyles } from '@material-ui/core/styles';
 import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
-import IconButton from '@material-ui/core/IconButton';
-import MenuIcon from '@material-ui/icons/Menu';
 import AddBox from '@material-ui/icons/AddBox';
+import MenuIcon from '@material-ui/icons/Menu';
+import React, { useState } from 'react';
 import ArtistForm from '../form/ArtistForm';
 import Button from './controls/Button';
 import Popup from './Popup';
@@ -22,7 +22,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export default function MenuAppBar(props) {
+export function Header(_props: any) {
 
   const classes = useStyles();
   const [openPopup, setOpenPopup] = useState(false);
@@ -30,12 +30,6 @@ export default function MenuAppBar(props) {
   const [auth, setAuth] = useState(true);
   const [anchorEl, setAnchorEl] = useState(null);
   const open = Boolean(anchorEl);
-
-  const addOrEdit = (design, resetForm) => {
-    // artistService.insertArtwork(design)
-    resetForm() 
-    setOpenPopup(false) 
-  }
 
   return (
     <div className={classes.root}>
@@ -50,22 +44,21 @@ export default function MenuAppBar(props) {
           {auth && (
             <div>
               <Button
-              text="Add New"
-              color="inherit"
-              startIcon={<AddBox />}
-              className ={classes.newButton}
-              onClick={() => setOpenPopup(true)}/>
+                text="Add New"
+                color="inherit"
+                startIcon={<AddBox />}
+                className={classes.menuButton}
+                onClick={() => setOpenPopup(true)} />
             </div>
           )}
         </Toolbar>
       </AppBar>
       <Popup
-        title = "Add Design"
+        title="Add Design"
         openPopup={openPopup}
         setOpenPopup={setOpenPopup}
-        >
-          <ArtistForm
-          addOrEdit={addOrEdit}/>
+      >
+        <ArtistForm />
       </Popup>
     </div>
   );
