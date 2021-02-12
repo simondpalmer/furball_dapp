@@ -58,6 +58,10 @@ a:active,
   color: var(--secondary);
 }
 
+.artwork-tile {
+  max-width: 400px;
+}
+
 button, input {
   font: inherit;
   outline: none;

@@ -5,7 +5,7 @@ import "regenerator-runtime/runtime";
 import { createToken, getDesigns, getDesignTokens } from "./api/token";
 import Header from "./components/Header";
 import getConfig from "./config/config";
-import { artMetadataCIDToStegods } from "./db/ceramic";
+import { artMetadataCIDToStegods, artMetadataCIDToStegodCID } from "./db/ceramic";
 import "./global.css";
 import { ArtMetadata, ArtTokenBalance } from "./interface";
 import { login, logout } from "./utils";
@@ -40,23 +40,15 @@ export default function App() {
 
   async function populateDesigns() {
     const designs = await getDesigns(window.accountId);
+    console.log(designs);
     let proms: Promise<Uint8Array>[] = [];
     for (let i = 0; i < designs.length; i++) {
-      proms.push(artMetadataCIDToStegods(designs[i]));
+      proms.push(artMetadataCIDToStegodCID(designs[i]));
     }
 
-    let srcBlobs = (await Promise.all(proms))
-      .map((buff) => {
-        try {
-          const blob = new Blob([new Uint8Array(buff, 0, buff.length)]);
-          return URL.createObjectURL(blob);
-        } catch (e) {
-          console.error("Error parsing to URL", e);
-          return null;
-        }
-      })
-      .filter((it) => it != null);
-    setArtworks(srcBlobs);
+    
+    const cids = await Promise.all(proms)
+    setArtworks(cids.map(cid => `https://ipfs.infura.io/ipfs/${cid}`));
   }
 
   async function updateTokenBalances() {
@@ -125,6 +117,9 @@ export default function App() {
         <br></br>
         <Grid container item xs={12} justify="space-between">
           {/* {designs} */}
+          {artworks.map((url, i) => 
+              <img class="artwork-tile" src={url} key={`img-${i}`} alt="" srcset="" />
+          )}
         </Grid>
       </main>
       {showNotification && <Notification />}
