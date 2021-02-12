@@ -8,11 +8,14 @@ import { CIDToUrl } from "../ipfs";
 export function Artwork() {
   const { artCID } = useParams() as any;
   const [metaData, setMetaData] = useState<ArtMetadata>();
+
+  //@ts-ignore
   useEffect(async () => {
     if (!artCID) return;
     const _metaData = await getArtMetadata(artCID);
     setMetaData(_metaData);
   }, artCID);
+
   return (
     <>
       <Grid container direction="column" alignItems="center">

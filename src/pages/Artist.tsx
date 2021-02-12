@@ -2,9 +2,9 @@ import { Grid } from "@material-ui/core";
 import React, { useEffect, useState } from "react";
 import { getDesigns, getDesignTokens } from "../api/token";
 import { artMetadataCIDToStegodCID } from "../db/ceramic";
+import "../global.css";
 import { ArtTokenBalance } from "../interface";
 import { CIDToUrl } from "../ipfs";
-import "../global.css";
 
 export function Artist() {
   const [artworks, setArtworks] = useState<(string | null)[]>([]);
@@ -43,7 +43,7 @@ export function Artist() {
         {/* {designs} */}
         {artworks.map((url, i) => (
           <img
-            class="artwork-tile"
+            className="artwork-tile"
             src={url || ""}
             key={`img-${i}`}
             alt=""

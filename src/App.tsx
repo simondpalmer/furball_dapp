@@ -7,8 +7,8 @@ import getConfig from "./config/config";
 import "./global.css";
 import { Artist } from "./pages/Artist";
 import { Artwork } from "./pages/Artwork";
-import { Profile } from "./pages/Profile";
 import { Lookup } from "./pages/Lookup";
+import { Profile } from "./pages/Profile";
 import { login } from "./utils";
 
 const { networkId } = getConfig(process.env.NODE_ENV || "development");
@@ -35,26 +35,26 @@ export default function App() {
         </p>
       </main>
     );
-  } else {
-    return (
-      // use React Fragment, <>, to avoid wrapping elements in unnecessary divs
-      <Router>
-        <Header />
-        <Switch>
-          <Route path="/user/:accountID">
-            <Artist />
-          </Route>
-          <Route path="/artwork/:artCID">
-            <Artwork />
-          </Route>
-          <Route path="/lookup">
-            <Lookup />
-          </Route>
-          <Route path="/">
-            <Profile />
-          </Route>
-        </Switch>
-      </Router>
-    );
   }
+
+  return (
+    // use React Fragment, <>, to avoid wrapping elements in unnecessary divs
+    <Router>
+      <Header auth={true} />
+      <Switch>
+        <Route path="/user/:accountID">
+          <Artist />
+        </Route>
+        <Route path="/artwork/:artCID">
+          <Artwork />
+        </Route>
+        <Route path="/lookup">
+          <Lookup />
+        </Route>
+        <Route path="/">
+          <Profile />
+        </Route>
+      </Switch>
+    </Router>
+  );
 }
