@@ -47,7 +47,7 @@ export function Artist() {
             src={url || ""}
             key={`img-${i}`}
             alt=""
-            srcset=""
+            src=""
           />
         ))}
       </Grid>

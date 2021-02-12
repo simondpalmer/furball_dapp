@@ -29,7 +29,7 @@ export function Artwork() {
           style={{ maxWidth: "800px", margin: "1rem" }}
           src={CIDToUrl(metaData?.stegod)}
           alt=""
-          srcset=""
+          src=""
         />
         <Grid
           container

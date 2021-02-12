@@ -76,9 +76,7 @@ export function Header(auth: HeaderProps) {
   const classes = useStyles();
   const [openPopup, setOpenPopup] = useState(false);
   const [redirect, setRedirect] = useState(false);
-  const [anchorEl, setAnchorEl] = useState(null);
   const [searchCid, setSearchCid] = useState('');
-  const open = Boolean(anchorEl);
 
   const handleSubmit = () => {
     setRedirect(true)
@@ -86,7 +84,7 @@ export function Header(auth: HeaderProps) {
 
   if (redirect) {
     // setRedirect(false)
-    return <Redirect push to={`/artwork:${searchCid}`} />
+    return <Redirect push to={`/artwork/:${searchCid}`} />
   }
 
   const rhs = auth ? (

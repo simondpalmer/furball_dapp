@@ -14,9 +14,23 @@ import { login } from "./utils";
 const { networkId } = getConfig(process.env.NODE_ENV || "development");
 export default function App() {
 
-  // if not signed in, return early with sign-in prompt
-  if (!window.walletConnection.isSignedIn()) {
-    return (
+  const auth = window.walletConnection.isSignedIn()
+  const content = auth ? (
+    <Switch>
+      <Route path="/user/:accountID">
+        <Artist />
+      </Route>
+      <Route path="/artwork/:artCID">
+        <Artwork />
+      </Route>
+      <Route path="/lookup">
+        <Lookup />
+      </Route>
+      <Route path="/">
+        <Profile />
+      </Route>
+    </Switch>
+  ) : (
       <main>
         <h1>Welcome to FurBall</h1>
         <p>
@@ -35,26 +49,12 @@ export default function App() {
         </p>
       </main>
     );
-  }
 
   return (
     // use React Fragment, <>, to avoid wrapping elements in unnecessary divs
-    <Router>
+    <Router forceRefresh={true}>
       <Header auth={true} />
-      <Switch>
-        <Route path="/user/:accountID">
-          <Artist />
-        </Route>
-        <Route path="/artwork/:artCID">
-          <Artwork />
-        </Route>
-        <Route path="/lookup">
-          <Lookup />
-        </Route>
-        <Route path="/">
-          <Profile />
-        </Route>
-      </Switch>
+      {content}
     </Router>
   );
 }
