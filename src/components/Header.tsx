@@ -129,9 +129,9 @@ export function Header(auth: HeaderProps) {
             <ListItem button key="Gallery">
               <Link to={`user/${window.accountId}`}>Your Gallery</Link>
             </ListItem>
-            <ListItem button key="Profile">
+            {/* <ListItem button key="Profile">
               <Link to="/">Your Profile</Link>
-            </ListItem>
+            </ListItem> */}
           </>
         )}
       </List>

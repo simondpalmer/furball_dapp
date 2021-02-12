@@ -102,23 +102,27 @@ export function Artwork() {
         <div className="spacer" style={{ height: "100px" }}></div>
         <Grid container justify="center">
           {sellers.map((seller, i) => (
-            <div key={`buy-from-${i}`}>
-              <Input
-                type="number"
-                value={amountBuy[i]}
-                onChange={(e) => {
-                  amountBuy[i] = parseInt(e.target.value);
-                  setAmountBuy([...amountBuy]);
-                }}
-              ></Input>
+            <Grid container justify="center" key={`buy-from-${i}`}>
+              {(seller[0] == window.accountId && (
+                <p>You cannot buy from yourself</p>
+              )) || (
+                <Input
+                  type="number"
+                  value={amountBuy[i]}
+                  onChange={(e) => {
+                    amountBuy[i] = parseInt(e.target.value);
+                    setAmountBuy([...amountBuy]);
+                  }}
+                ></Input>
+              )}
               <Button
                 variant="contained"
-                color="primary"
+                color={seller[0] == window.accountId ? "disabled" : "primary"}
                 onClick={() => makePurchase(seller[0], amountBuy[i])}
               >
                 Buy a maximum of {seller[1]} from {seller[0]}
               </Button>
-            </div>
+            </Grid>
           ))}
         </Grid>
       </Grid>

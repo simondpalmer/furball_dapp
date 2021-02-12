@@ -5,6 +5,10 @@ import { artMetadataCIDToStegods } from "../db/ceramic";
 import { ArtTokenBalance } from "../interface";
 
 export function Profile() {
+  const auth = window.walletConnection.isSignedIn();
+  useEffect(() => {
+    if (auth) window.location.href = `/user/${window.accountId}`;
+  }, []);
   // use React Hooks to store design in component state
   const [artworks, setArtworks] = useState<(string | null)[]>([]);
 
