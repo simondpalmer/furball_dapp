@@ -7,16 +7,30 @@ import getConfig from "./config/config";
 import "./global.css";
 import { Artist } from "./pages/Artist";
 import { Artwork } from "./pages/Artwork";
-import { Profile } from "./pages/Profile";
 import { Lookup } from "./pages/Lookup";
+import { Profile } from "./pages/Profile";
 import { login } from "./utils";
 
 const { networkId } = getConfig(process.env.NODE_ENV || "development");
 export default function App() {
 
-  // if not signed in, return early with sign-in prompt
-  if (!window.walletConnection.isSignedIn()) {
-    return (
+  const auth = window.walletConnection.isSignedIn()
+  const content = auth ? (
+    <Switch>
+      <Route path="/user/:accountID">
+        <Artist />
+      </Route>
+      <Route path="/artwork/:artCID">
+        <Artwork />
+      </Route>
+      <Route path="/lookup">
+        <Lookup />
+      </Route>
+      <Route path="/">
+        <Profile />
+      </Route>
+    </Switch>
+  ) : (
       <main>
         <h1>Welcome to FurBall</h1>
         <p>
@@ -35,26 +49,12 @@ export default function App() {
         </p>
       </main>
     );
-  } else {
-    return (
-      // use React Fragment, <>, to avoid wrapping elements in unnecessary divs
-      <Router>
-        <Header />
-        <Switch>
-          <Route path="/user/:accountID">
-            <Artist />
-          </Route>
-          <Route path="/artwork/:artCID">
-            <Artwork />
-          </Route>
-          <Route path="/lookup">
-            <Lookup />
-          </Route>
-          <Route path="/">
-            <Profile />
-          </Route>
-        </Switch>
-      </Router>
-    );
-  }
+
+  return (
+    // use React Fragment, <>, to avoid wrapping elements in unnecessary divs
+    <Router forceRefresh={true}>
+      <Header auth={true} />
+      {content}
+    </Router>
+  );
 }

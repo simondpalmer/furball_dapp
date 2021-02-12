@@ -11,6 +11,8 @@ export function Artwork() {
   const [tokenCost, setTokenCost] = useState(0);
   // const [sellers, ]
   const [metaData, setMetaData] = useState<ArtMetadata>();
+
+  //@ts-ignore
   useEffect(async () => {
     if (!artCID) return;
     const _metaData = await getArtMetadata(artCID);
@@ -34,7 +36,7 @@ export function Artwork() {
           style={{ maxWidth: "800px", margin: "1rem" }}
           src={CIDToUrl(metaData?.stegod)}
           alt=""
-          srcset=""
+          src=""
         />
         <Grid
           container
