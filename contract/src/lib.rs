@@ -1,5 +1,6 @@
 use std::u128;
 
+use account::Account;
 use env::predecessor_account_id;
 use near_sdk::{
     borsh::{self, BorshDeserialize, BorshSerialize},
@@ -46,7 +47,7 @@ pub trait FungibleTokenTrait {
 }
 
 pub trait Sale {
-    fn put_on_sale(&mut self, art: CID, numb_coins: u128);
+    fn put_on_sale(&mut self, art: CID, numb_coins: U128);
     fn get_amount_on_sale(&self, art: CID, seller: AccountId) -> U128;
     fn buy(&mut self, art: CID, numb_coins: u128, token_owner: AccountId);
     fn change_cost(&mut self, art: CID, cost_per_token: u128);
@@ -73,7 +74,7 @@ pub trait Proile {
 pub struct Token {
     artist: AccountId,
     artwork: CID,
-    sellers: Vec<AccountId>,
+    sellers: UnorderedSet<AccountId>,
     token: nep21::FungibleToken,
     // In near
     cost_per_token: u128,
@@ -140,12 +141,12 @@ impl Sale for FurBall {
     }
 
     #[payable]
-    fn put_on_sale(&mut self, art: CID, amount: u128) {
+    fn put_on_sale(&mut self, art: CID, amount: U128) {
         let mut art_token = self.get_art(&art).unwrap();
         art_token
             .token
-            .inc_allowance(env::current_account_id(), U128(amount));
-        art_token.sellers.push(env::predecessor_account_id());
+            .inc_allowance(env::current_account_id(), amount);
+        art_token.sellers.insert(&env::predecessor_account_id());
         self.update_token(&art, &art_token);
     }
 
@@ -189,10 +190,11 @@ impl Sale for FurBall {
     fn get_all_sellers(&self, art: CID) -> Vec<(AccountId, u128)> {
         let art_token = self.get_art(&art).unwrap();
         let mut sellers: Vec<(AccountId, u128)> = Vec::new();
-        for seller in art_token.sellers {
+        for seller in art_token.sellers.iter() {
             let bal = art_token
                 .token
-                .get_allowance(seller.clone(), env::current_account_id()).0;
+                .get_allowance(seller.clone(), env::current_account_id())
+                .0;
             if bal > 0 {
                 sellers.push((seller, bal))
             }
@@ -267,7 +269,7 @@ impl TokenFactTrait for FurBall {
                 self.total_supply_new_tok,
                 artwork.clone(),
             ),
-            sellers: Vec::new(),
+            sellers: UnorderedSet::new(format!("{}-sellers", artwork).into()),
             cost_per_token: DEFAULT_COST_PER_TOKEN,
         };
         // self.original_cid_to_artwork_cid.insert(&original, &artwork);
@@ -456,7 +458,7 @@ mod tests {
         let mut contract = FurBall::new();
         let art = "QmPAwR5un1YPJEF6iB7KvErDmAhiXxwL5J5qjA3Z9ceKqv".to_string();
         contract.create_token(art.clone());
-        contract.put_on_sale(art.clone(), 1_000_000);
+        contract.put_on_sale(art.clone(), U128(1_000_000));
         assert_eq!(
             contract
                 .get_allowance(art.clone(), carol(), env::current_account_id())
@@ -508,7 +510,7 @@ mod tests {
         let mut contract = FurBall::new();
         let art = "QmPAwR5un1YPJEF6iB7KvErDmAhiXxwL5J5qjA3Z9ceKqv".to_string();
         contract.create_token(art.clone());
-        contract.put_on_sale(art.clone(), 100);
+        contract.put_on_sale(art.clone(), U128(100));
         assert_eq!(contract.get_amount_on_sale(art.clone(), carol()).0, 100);
         contract.change_cost(art.clone(), 100);
         assert_eq!(contract.cost_per_token(art.clone()), 100);
