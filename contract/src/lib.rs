@@ -56,10 +56,11 @@ pub trait Sale {
 }
 
 pub trait TokenFactTrait {
-    fn create_token(&mut self, artwork: CID);
+    fn create_token(&mut self, artwork: CID, original: CID);
 }
 
 pub trait DesignTrait {
+    fn get_artwork_cid_of_original_cid(&self, original_cid: CID) -> Option<CID>;
     fn get_designs(&self, artist: AccountId) -> Vec<CID>;
     fn get_design_tokens(&self, user: AccountId) -> Vec<(CID, U128)>;
 }
@@ -83,6 +84,7 @@ pub struct Token {
 #[derive(BorshSerialize, BorshDeserialize)]
 pub struct FurBall {
     total_supply_new_tok: U128,
+    original_cid_to_artwork_cid: UnorderedMap<CID, CID>,
     artist_to_artist_cid: UnorderedMap<AccountId, CID>,
     art_cid_to_token: UnorderedMap<CID, Token>,
     art_cids: UnorderedSet<CID>,
@@ -108,6 +110,7 @@ impl FurBall {
         assert!(!env::state_exists(), "Already initialized");
         let fb = Self {
             artist_to_artist_cid: UnorderedMap::new(b"artistCID-belongs-to".to_vec()),
+            original_cid_to_artwork_cid: UnorderedMap::new(b"originalCID-of-artworkCID".to_vec()),
             art_cid_to_token: UnorderedMap::new(b"artCID-of-token".to_vec()),
             art_cids: UnorderedSet::new(b"all-art-cids".to_vec()),
             total_supply_new_tok,
@@ -237,12 +240,15 @@ impl DesignTrait for FurBall {
         }
         designs
     }
+    fn get_artwork_cid_of_original_cid(&self, original_cid: CID) -> Option<CID> {
+        self.original_cid_to_artwork_cid.get(&original_cid)
+    }
 }
 
 #[near_bindgen]
 impl TokenFactTrait for FurBall {
     #[payable]
-    fn create_token(&mut self, artwork: CID) {
+    fn create_token(&mut self, artwork: CID, original: CID) {
         assert!(
             self.art_cid_to_token.get(&artwork).is_none(),
             format!("Artwork with CID {} cannot already have a token", artwork)
@@ -266,6 +272,7 @@ impl TokenFactTrait for FurBall {
             sellers: UnorderedSet::new(format!("{}-sellers", artwork).into()),
             cost_per_token: DEFAULT_COST_PER_TOKEN,
         };
+        self.original_cid_to_artwork_cid.insert(&original, &artwork);
         self.art_cid_to_token.insert(&artwork, &tok);
         self.art_cids.insert(&artwork);
     }

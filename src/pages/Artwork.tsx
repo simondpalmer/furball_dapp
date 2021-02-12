@@ -1,15 +1,9 @@
 import { Button, Grid, Input } from "@material-ui/core";
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import {
-  buy,
-  getAllSellers,
-  getBalance,
-  getCostPerToken,
-  putOnSale,
-} from "../api/token";
+import { buy, getAllSellers, getBalance, getCostPerToken, putOnSale } from "../api/token";
 import { getArtMetadata } from "../db/ceramic";
-import { AccountID, ArtMetadata } from "../interface";
+import { AccountID, ArtMetadata, SellerInfo } from "../interface";
 import { CIDToUrl } from "../ipfs";
 
 export function Artwork() {
@@ -106,15 +100,15 @@ export function Artwork() {
               {(seller[0] == window.accountId && (
                 <p>You cannot buy from yourself</p>
               )) || (
-                <Input
-                  type="number"
-                  value={amountBuy[i]}
-                  onChange={(e) => {
-                    amountBuy[i] = parseInt(e.target.value);
-                    setAmountBuy([...amountBuy]);
-                  }}
-                ></Input>
-              )}
+                  <Input
+                    type="number"
+                    value={amountBuy[i]}
+                    onChange={(e) => {
+                      amountBuy[i] = parseInt(e.target.value);
+                      setAmountBuy([...amountBuy]);
+                    }}
+                  ></Input>
+                )}
               <Button
                 variant="contained"
                 color={seller[0] == window.accountId ? "disabled" : "primary"}

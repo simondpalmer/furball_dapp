@@ -17,6 +17,6 @@ export interface ArtTokenBalance {
 }
 
 export interface SellerInfo {
-  seller: AccountId;
+  seller: AccountID;
   totalSupply: number;
 }

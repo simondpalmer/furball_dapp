@@ -48,8 +48,16 @@ export async function putOnSale(art: CID, numbCoins: number) {
   await (window.contract as any).put_on_sale({ art, amount: `${numbCoins}` });
 }
 
-export async function createToken(artwork: CID) {
-  await (window.contract as any).create_token({ artwork });
+export async function getArtworkCidFromOriginalCid(
+  original: CID
+): Promise<CID | null> {
+  return await (window.contract as any).get_artwork_cid_of_original_cid({
+    original_cid: original,
+  });
+}
+
+export async function createToken(artwork: CID, original: CID) {
+  await (window.contract as any).create_token({ artwork, original });
 }
 
 export async function buy(

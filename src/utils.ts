@@ -34,6 +34,7 @@ export async function initContract() {
         "get_designs",
         "get_profile",
         "get_design_tokens",
+        "get_artwork_cid_of_original_cid",
         "get_amount_on_sale",
         "cost_per_token",
         "get_all_sellers",
