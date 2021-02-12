@@ -1,21 +1,23 @@
 import CeramicClient from "@ceramicnetwork/http-client";
+
+// import BufferList from "bl/BufferList";
 import { NearWalletProvider } from "key-did-provider-ed25519";
 import { ArtMetadata, CID, UserProfile } from "../interface";
 import { getProfileId, setProfileId } from "./local";
 
-
 // TODO: parse out into env, for now j using a dev node connection that gets wiped
-const API_URL = "http://localhost:7007";
+// const API_URL = "http://localhost:7007";
+const API_URL = "https://gateway-clay.ceramic.network";
 const ceramic = new CeramicClient(API_URL);
 
 export async function initCeramic() {
   const accountId = window.accountId;
   const networkId = window.walletConnection._networkId;
-  const keyPair = await window
-    .walletConnection
-    ._keyStore
-    .getKey(networkId, accountId)
-  const provider = new NearWalletProvider(keyPair)
+  const keyPair = await window.walletConnection._keyStore.getKey(
+    networkId,
+    accountId
+  );
+  const provider = new NearWalletProvider(keyPair);
   await ceramic.setDIDProvider(provider);
 }
 
@@ -56,11 +58,20 @@ export async function getArtMetadata(artCID: CID): Promise<ArtMetadata> {
   return (await (await ceramic.loadDocument(artCID)).content) as ArtMetadata;
 }
 
+export async function artMetadataCIDToStegodCID(
+  artMetadataCID: CID
+): Promise<string> {
+  const artmetadata = await getArtMetadata(artMetadataCID);
+  return artmetadata.stegod;
+}
+
 export async function artMetadataCIDToStegods(
   artMetadataCID: CID
 ): Promise<Uint8Array> {
+  console.log(artMetadataCID)
   const artmetadata = await getArtMetadata(artMetadataCID);
   const stegod = await getArtStegod(artmetadata.stegod);
+  console.log(stegod);
   return stegod;
 }
 
@@ -80,6 +91,21 @@ export async function uploadArtStegod(img: Uint8Array) {
 }
 
 async function getArtStegod(stegod: CID): Promise<Uint8Array> {
-  const doc = await ceramic.loadDocument(stegod);
-  return doc.content.data as Uint8Array
+  // const doc = await ceramic.loadDocument(stegod);
+  // return doc.content.data as Uint8Array
+  let mastBuf = [];
+  console.log(stegod)
+  for await (const file of window.ipfs.get(stegod)) {
+    console.log(file.path);
+    const buffers: Buffer[] = [];
+    for await (const chunk of file.content) {
+      buffers.push(chunk);
+    }
+    mastBuf.push(buffers)
+  }
+  console.log(mastBuf)
+  // mastBuf.flatten()
+  console.log(mastBuf)
+  const flat = [].concat.apply([], mastBuf);
+  return new Uint8Array(...flat);
 }

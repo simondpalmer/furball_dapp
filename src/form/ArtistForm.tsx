@@ -1,123 +1,132 @@
-import { Grid } from '@material-ui/core';
-import React from 'react';
-import Button from '../components/controls/Button';
-import FeaturesSelect from '../components/controls/FeaturesSelect';
-import FurryGroup from '../components/controls/FurryGroup';
-import Input from '../components/controls/Input';
-import Upload from '../components/controls/Upload';
-import { Form, useForm } from '../components/useForm';
+import { Grid } from "@material-ui/core";
+import React, { useState } from "react";
+import stegasus from "../../../stegasus/Cargo.toml";
+import { createToken } from "../api/token";
+import Button from "../components/controls/Button";
+import Input from "../components/controls/Input";
+import Upload from "../components/controls/Upload";
+import { Form, useForm } from "../components/useForm";
+import { createArtMetadata } from "../db/ceramic";
+import { ArtMetadata } from "../interface";
 
 const fursonaItems = [
-    { id: 'musclefur', title: 'Musclefur' },
-    { id: 'fluffer', title: 'Fluffer' },
-    { id: 'other', title: 'Other' },
-]
+  { id: "musclefur", title: "Musclefur" },
+  { id: "fluffer", title: "Fluffer" },
+  { id: "other", title: "Other" },
+];
 
-const initialFValues = {
-    id: 0,
-    designTitle: "",
-    accountId: "",
-    designImageUrl: "",
-    designDescription: "",
-    designPrice: 1,
-    designFursona: "other",
-    designFeatureId: "",
-    addedDate: new Date(),
-}
+interface ArtistFormProps { }
 
+export default function ArtistForm(props: ArtistFormProps) {
+  const [selectedBuffer, setSelectedBuffer] = useState<Buffer | null>(null);
+  const [loading, setLoading] = useState(false);
 
-export default function ArtistForm(props) {
-    const { addOrEdit } = props
+  const {
+    values,
+    setValues,
+    errors,
+    setErrors,
+    handleInputChange,
+    resetForm,
+  } = useForm();
 
-    const validate = (fieldValues = values) => {
-        let temp = { ...errors }
-        if ('designTitle' in fieldValues)
-            temp.designTitle = fieldValues.designTitle ? "" : "give it a furry name"
-        if ('designDescription' in fieldValues)
-            temp.designDescription = fieldValues.designDescription ? "" : "give it a furry description"
-        if ('designPrice' in fieldValues)
-            temp.designPrice = fieldValues.designPrice ? "" : "name your price"
-        setErrors({
-            ...temp
-        })
-
-        if (fieldValues == values)
-            return Object.values(temp).every(x => x == "")
+  async function uploadNewToken(e: React.FormEvent<HTMLFormElement>) {
+    setLoading(true);
+    // TODO: loading wheel
+    e.preventDefault();
+    if (!selectedBuffer) {
+      alert("Please upload a file");
+      return;
     }
+    // const bufFile = (e.target as any).files[0];
+    console.log(selectedBuffer);
+    // throw "asasas"
+    // const originalCID = await uploadArt(selectedBuffer);
+    const originalCID = (await window.ipfs.add(selectedBuffer)).path
+    // TODO: stego
+    const stegMsg = originalCID;
+    console.log(`stegoing message "${stegMsg}" into image`);
+    const stegod = stegasus.encode_img(
+      new Uint8Array(selectedBuffer),
+      new Uint8Array(Buffer.from(stegMsg))
+    );
+    const stegoCID = (await window.ipfs.add(stegod)).path
+    // const stegoCID = await uploadArtStegod(new Uint8Array(stegod));
+    console.log(`Stegod CID: ${stegoCID}`);
 
-    const {
-        values,
-        setValues,
-        errors,
-        setErrors,
-        handleInputChange,
-        resetForm
-    } = useForm(initialFValues, true, validate);
+    const artData: ArtMetadata = {
+      stegod: stegoCID,
+      original: originalCID,
+      //   TODO: add in bases
+      bases: [],
+      //   bases: bases.length === 0 ? undefined : bases
+    };
+    const artDataCID = await createArtMetadata(artData);
+    await createToken(artDataCID, originalCID);
+    alert("Uploaded!");
+    // setBases([]);
+    setSelectedBuffer(null);
+    // TODO: add back in
+    // await updateTokenBalances();
+    // window.location.reload();
+  }
 
-    const handleSubmit = e => {
-        e.preventDefault()
-        if (validate()) {
-            addOrEdit(values, resetForm)
-        }
-    }
-
-    return (
-        <Form onSubmit={handleSubmit}>
-            <Grid container>
-                <Grid item xs={6}>
-                    <Input
-                        name="designTitle"
-                        label="Name"
-                        value={values.designTitle}
-                        onChange={handleInputChange}
-                        error={errors.designTitle}
-                    />
-                    <Input
-                        name="designDescription"
-                        label="Description"
-                        value={values.designDescription}
-                        onChange={handleInputChange}
-                        error={errors.designDescription}
-                    />
-                    <Input
-                        name="designPrice"
-                        label="Price"
-                        value={values.designPrice}
-                        onChange={handleInputChange}
-                        error={errors.designPrice}
-                    />
-                </Grid>
-                <Grid item xs={6}>
-                    <FurryGroup
-                        name="designFursona"
-                        label="Fursona"
-                        value={values.designFursona}
-                        onChange={handleInputChange}
-                        items={fursonaItems}
-                    />
-                    <FeaturesSelect
-                        name="designFeatureId"
-                        label="Features"
-                        onChange={handleInputChange}
-                        // options={artistService.getfeatureCollection()}
-                    />
-                    <Upload
-                        name="designImageUrl"
-                        label="Image"
-                        // onUploadComplete={onOriginalUploadComplete}
-                        onChange={handleInputChange}
-                    />
-                    <div>
-                        <Button
-                            type="submit"
-                            text="Submit" />
-                        <Button
-                            text="Reset"
-                            color="default"
-                            onClick={resetForm} />
-                    </div>
-                </Grid>
-            </Grid>
-        </Form>
-    )
+  return (
+    <Form onSubmit={uploadNewToken}>
+      <Grid container>
+        {loading && (
+          <Grid item xs={12}>
+            Loading...
+          </Grid>
+        )}
+        <Grid item xs={6}>
+          <Input
+            name="designTitle"
+            label="Name"
+            value={values.designTitle}
+            onChange={handleInputChange}
+            required
+          />
+          <Input
+            name="designDescription"
+            label="Description"
+            value={values.designDescription}
+            onChange={handleInputChange}
+            required
+          />
+          <Input
+            name="designPrice"
+            label="Price"
+            type="number"
+            value={values.designPrice}
+            onChange={handleInputChange}
+            required
+          />
+        </Grid>
+        <Grid item xs={6}>
+          {/* <FurryGroup
+            name="designFursona"
+            label="Fursona"
+            value={values.designFursona}
+            onChange={handleInputChange}
+            items={fursonaItems}
+          /> */}
+          {/* <FeaturesSelect
+            name="designFeatureId"
+            label="Features"
+            onChange={handleInputChange}
+            // options={artistService.getfeatureCollection()}
+          /> */}
+          <Upload
+            uploadText="Drag and drop your image or click here!"
+            onBufferComplete={setSelectedBuffer}
+          />
+          <div>
+            <Button type="submit" text="Submit" />
+            <Button text="Reset" color="default" onClick={resetForm} />
+          </div>
+        </Grid>
+      </Grid>
+    </Form>
+  );
 }

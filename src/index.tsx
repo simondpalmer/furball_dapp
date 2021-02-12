@@ -3,6 +3,7 @@ import React from "react";
 import ReactDOM from "react-dom";
 import App from "./App";
 import { initCeramic } from "./db/ceramic";
+import { initIPFS } from './ipfs';
 import { initContract } from "./utils";
 
 declare global {
@@ -11,6 +12,7 @@ declare global {
     walletConnection: WalletConnection;
     accountId: any;
     contract: Contract;
+    ipfs: any
   }
 }
 
@@ -19,5 +21,6 @@ declare global {
     ReactDOM.render(<App />, document.querySelector("#root"));
     console.log(window.contract)
   })
+  .then(initIPFS)
   .then(initCeramic)
   .catch(console.error)

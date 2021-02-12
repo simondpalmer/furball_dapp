@@ -1,17 +1,22 @@
-export type CID = string
-export type AccountID = any
+export type CID = string;
+export type AccountID = any;
 
 export interface UserProfile {
-  username: string,
+  username: string;
 }
 
 export interface ArtMetadata {
-  original: CID,
-  stegod: CID,
-  bases?: CID[]
+  original: CID;
+  stegod: CID;
+  bases?: CID[];
 }
 
 export interface ArtTokenBalance {
-  artworkCID: CID,
-  amount: number,
+  artworkCID: CID;
+  amount: number;
+}
+
+export interface SellerInfo {
+  seller: AccountID;
+  totalSupply: number;
 }
