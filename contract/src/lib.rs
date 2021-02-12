@@ -272,7 +272,7 @@ impl TokenFactTrait for FurBall {
             sellers: UnorderedSet::new(format!("{}-sellers", artwork).into()),
             cost_per_token: DEFAULT_COST_PER_TOKEN,
         };
-        // self.original_cid_to_artwork_cid.insert(&original, &artwork);
+        self.original_cid_to_artwork_cid.insert(&original, &artwork);
         self.art_cid_to_token.insert(&artwork, &tok);
         self.art_cids.insert(&artwork);
     }
