@@ -4,6 +4,11 @@ import { getDesigns, getDesignTokens } from "../api/token";
 import { artMetadataCIDToStegods } from "../db/ceramic";
 import { ArtTokenBalance } from "../interface";
 
+interface StegoArtData {
+  url: string,
+  fileName: string,
+}
+
 export function Profile() {
   // use React Hooks to store design in component state
   const [artworks, setArtworks] = useState<(string | null)[]>([]);
@@ -38,8 +43,8 @@ export function Profile() {
     let srcBlobs = (await Promise.all(proms))
       .map((buff) => {
         try {
-          const blob = new Blob([new Uint8Array(buff, 0, buff.length)]);
-          return URL.createObjectURL(blob);
+          const blob = new Blob([buff], { type: "image/png" });
+          return URL.createObjectURL(blob)
         } catch (e) {
           console.error("Error parsing to URL", e);
           return null;
@@ -62,12 +67,18 @@ export function Profile() {
     }
   }, []);
 
+  const artworkDowloadItems = artworks.map((blobUrl) => (
+    <a href={blobUrl as string} download={blobUrl as string}>
+      {blobUrl as string}
+    </a>
+  ))
+
   return (
     <>
       <h1>{window.accountId} your designs are below. Enjoy!</h1>
       <br></br>
       <Grid container item xs={12} justify="space-between">
-        {artworks}
+        {artworkDowloadItems}
       </Grid>
     </>
   )
