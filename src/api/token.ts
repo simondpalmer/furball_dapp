@@ -67,6 +67,6 @@ export async function buy(
   cost_per_token: number
 ) {
   await (window.contract as any)
-    .buy({ art: artwork, amount, token_owner }, (amount * cost_per_token))
+    .buy({ art: artwork, amount, token_owner }, 0, (amount * cost_per_token))
     
 }

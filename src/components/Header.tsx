@@ -92,7 +92,7 @@ export function Header(auth: HeaderProps) {
   };
 
   if (redirect) {
-    return <Redirect push to={`/artwork/:${searchCid}`} />;
+    return <Redirect push to={`/artwork/${searchCid}`} />;
   }
 
   const setDrawerState = (newDrawerState: boolean) => (
@@ -129,9 +129,9 @@ export function Header(auth: HeaderProps) {
             <ListItem button key="Gallery">
               <Link to={`user/${window.accountId}`}>Your Gallery</Link>
             </ListItem>
-            <ListItem button key="Profile">
+            {/* <ListItem button key="Profile">
               <Link to="/">Your Profile</Link>
-            </ListItem>
+            </ListItem> */}
           </>
         )}
       </List>

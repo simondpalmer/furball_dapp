@@ -50,7 +50,7 @@ export function Lookup(props: LookupProps) {
   })
 
   if (redirect) {
-    return <Redirect push to={`/artwork/:${cid}`} />
+    return <Redirect push to={`/artwork/${cid}`} />
   }
 
 
