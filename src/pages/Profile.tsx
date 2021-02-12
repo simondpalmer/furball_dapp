@@ -4,10 +4,6 @@ import { getDesigns, getDesignTokens } from "../api/token";
 import { artMetadataCIDToStegods } from "../db/ceramic";
 import { ArtTokenBalance } from "../interface";
 
-interface StegoArtData {
-  url: string,
-  fileName: string,
-}
 
 export function Profile() {
   const auth = window.walletConnection.isSignedIn();
@@ -71,18 +67,12 @@ export function Profile() {
     }
   }, []);
 
-  const artworkDowloadItems = artworks.map((blobUrl) => (
-    <a href={blobUrl as string} download={blobUrl as string}>
-      {blobUrl as string}
-    </a>
-  ))
 
   return (
     <>
       <h1>{window.accountId} your designs are below. Enjoy!</h1>
       <br></br>
       <Grid container item xs={12} justify="space-between">
-        {artworkDowloadItems}
       </Grid>
     </>
   )
