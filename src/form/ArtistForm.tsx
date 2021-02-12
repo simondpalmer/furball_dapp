@@ -62,7 +62,7 @@ export default function ArtistForm(props: ArtistFormProps) {
       //   bases: bases.length === 0 ? undefined : bases
     };
     const artDataCID = await createArtMetadata(artData);
-    await createToken(artDataCID, originalCID);
+    await createToken(artDataCID);
     alert("Uploaded!");
     // setBases([]);
     setSelectedBuffer(null);
