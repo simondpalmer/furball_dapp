@@ -92,7 +92,7 @@ export function Header(auth: HeaderProps) {
   };
 
   if (redirect) {
-    return <Redirect push to={`/artwork/:${searchCid}`} />;
+    return <Redirect push to={`/artwork/${searchCid}`} />;
   }
 
   const setDrawerState = (newDrawerState: boolean) => (

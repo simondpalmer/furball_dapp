@@ -59,6 +59,7 @@ export function Artist() {
               src={CIDToUrl(artwork.ipfsImgCID)}
               alt=""
             />
+            <p>Click to view this piece</p>
           </a>
         ))}
       </Grid>
