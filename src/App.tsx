@@ -7,7 +7,7 @@ import getConfig from "./config/config";
 import "./global.css";
 import { Artist } from "./pages/Artist";
 import { Artwork } from "./pages/Artwork";
-import { Index } from "./pages/Index";
+import { Profile } from "./pages/Profile";
 import { Lookup } from "./pages/Lookup";
 import { login } from "./utils";
 
@@ -51,7 +51,7 @@ export default function App() {
             <Lookup />
           </Route>
           <Route path="/">
-            <Index />
+            <Profile />
           </Route>
         </Switch>
       </Router>

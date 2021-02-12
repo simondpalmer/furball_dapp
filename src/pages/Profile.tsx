@@ -4,7 +4,7 @@ import { getDesigns, getDesignTokens } from "../api/token";
 import { artMetadataCIDToStegods } from "../db/ceramic";
 import { ArtTokenBalance } from "../interface";
 
-export function Index() {
+export function Profile() {
   // use React Hooks to store design in component state
   const [artworks, setArtworks] = useState<(string | null)[]>([]);
 
