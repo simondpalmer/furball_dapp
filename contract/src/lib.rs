@@ -1,8 +1,9 @@
 use std::u128;
 
+use env::predecessor_account_id;
 use near_sdk::{
     borsh::{self, BorshDeserialize, BorshSerialize},
-    collections::{UnorderedMap, UnorderedSet},
+    collections::{UnorderedMap, UnorderedSet, Vector},
     env,
     json_types::U128,
     near_bindgen, wee_alloc, AccountId, Promise,
@@ -50,10 +51,11 @@ pub trait Sale {
     fn buy(&mut self, art: CID, numb_coins: u128, token_owner: AccountId);
     fn change_cost(&mut self, art: CID, cost_per_token: u128);
     fn cost_per_token(&self, art: CID) -> u128;
+    fn get_all_sellers(&self, art: CID) -> Vec<(AccountId, u128)>;
 }
 
 pub trait TokenFactTrait {
-    fn create_token(&mut self, artwork: CID, original: CID);
+    fn create_token(&mut self, artwork: CID);
 }
 
 pub trait DesignTrait {
@@ -71,6 +73,7 @@ pub trait Proile {
 pub struct Token {
     artist: AccountId,
     artwork: CID,
+    sellers: Vec<AccountId>,
     token: nep21::FungibleToken,
     // In near
     cost_per_token: u128,
@@ -142,6 +145,7 @@ impl Sale for FurBall {
         art_token
             .token
             .inc_allowance(env::current_account_id(), U128(amount));
+        art_token.sellers.push(env::predecessor_account_id());
         self.update_token(&art, &art_token);
     }
 
@@ -179,6 +183,21 @@ impl Sale for FurBall {
     fn cost_per_token(&self, art: CID) -> u128 {
         let art_token = self.get_art(&art).unwrap();
         return art_token.cost_per_token;
+    }
+
+    // TODO: test
+    fn get_all_sellers(&self, art: CID) -> Vec<(AccountId, u128)> {
+        let art_token = self.get_art(&art).unwrap();
+        let mut sellers: Vec<(AccountId, u128)> = Vec::new();
+        for seller in art_token.sellers {
+            let bal = art_token
+                .token
+                .get_allowance(seller.clone(), env::current_account_id()).0;
+            if bal > 0 {
+                sellers.push((seller, bal))
+            }
+        }
+        sellers
     }
 }
 
@@ -227,7 +246,7 @@ impl DesignTrait for FurBall {
 #[near_bindgen]
 impl TokenFactTrait for FurBall {
     #[payable]
-    fn create_token(&mut self, artwork: CID, original: CID) {
+    fn create_token(&mut self, artwork: CID) {
         assert!(
             self.art_cid_to_token.get(&artwork).is_none(),
             format!("Artwork with CID {} cannot already have a token", artwork)
@@ -248,9 +267,10 @@ impl TokenFactTrait for FurBall {
                 self.total_supply_new_tok,
                 artwork.clone(),
             ),
+            sellers: Vec::new(),
             cost_per_token: DEFAULT_COST_PER_TOKEN,
         };
-        self.original_cid_to_artwork_cid.insert(&original, &artwork);
+        // self.original_cid_to_artwork_cid.insert(&original, &artwork);
         self.art_cid_to_token.insert(&artwork, &tok);
         self.art_cids.insert(&artwork);
     }
@@ -398,8 +418,8 @@ mod tests {
     fn test_change_token_cost() {
         let context = get_context(carol());
         testing_env!(context);
-        let total_supply = 1_000_000_000_000_000u128;
-        let mut contract = FurBall::new(bob(), total_supply.into());
+        let total_supply = 1_000_000_000u128;
+        let mut contract = FurBall::new();
         let art = "QmPAwR5un1YPJEF6iB7KvErDmAhiXxwL5J5qjA3Z9ceKqv".to_string();
         contract.create_token(art.clone());
 
@@ -414,8 +434,8 @@ mod tests {
     fn test_transfer_token() {
         let mut context = get_context(carol());
         testing_env!(context.clone());
-        let total_supply = 1_000_000_000_000_000u128;
-        let mut contract = FurBall::new(bob(), total_supply.into());
+        let total_supply = 1_000_000_000u128;
+        let mut contract = FurBall::new();
         let art = "QmPAwR5un1YPJEF6iB7KvErDmAhiXxwL5J5qjA3Z9ceKqv".to_string();
         contract.create_token(art.clone());
         assert_eq!(contract.get_balance(art.clone(), carol()).0, total_supply);
@@ -431,9 +451,9 @@ mod tests {
     fn test_put_on_sale_and_buy() {
         let mut context = get_context(carol());
         testing_env!(context.clone());
-        let total_supply = 1_000_000_000_000_000u128;
+        let total_supply = 1_000_000_000u128;
         let carol_init_bal = env::account_balance();
-        let mut contract = FurBall::new(bob(), total_supply.into());
+        let mut contract = FurBall::new();
         let art = "QmPAwR5un1YPJEF6iB7KvErDmAhiXxwL5J5qjA3Z9ceKqv".to_string();
         contract.create_token(art.clone());
         contract.put_on_sale(art.clone(), 1_000_000);
@@ -449,6 +469,11 @@ mod tests {
         );
         contract.change_cost(art.clone(), 100);
         assert_eq!(contract.cost_per_token(art.clone()), 100);
+
+        assert_eq!(
+            contract.get_all_sellers(art.clone())[0],
+            (carol(), 1_000_000u128)
+        );
 
         assert_eq!(contract.get_balance(art.clone(), bob()).0, 0);
 
@@ -479,8 +504,8 @@ mod tests {
     fn test_buy_more_than_on_sale() {
         let mut context = get_context(carol());
         testing_env!(context.clone());
-        let total_supply = 1_000_000_000_000_000u128;
-        let mut contract = FurBall::new(bob(), total_supply.into());
+        let total_supply = 1_000_000_000u128;
+        let mut contract = FurBall::new();
         let art = "QmPAwR5un1YPJEF6iB7KvErDmAhiXxwL5J5qjA3Z9ceKqv".to_string();
         contract.create_token(art.clone());
         contract.put_on_sale(art.clone(), 100);
@@ -501,8 +526,8 @@ mod tests {
     fn test_change_tok_cost_unauth() {
         let context = get_context(carol());
         testing_env!(context);
-        let total_supply = 1_000_000_000_000_000u128;
-        let mut contract = FurBall::new(bob(), total_supply.into());
+        let total_supply = 1_000_000_000u128;
+        let mut contract = FurBall::new();
         let art = "QmPAwR5un1YPJEF6iB7KvErDmAhiXxwL5J5qjA3Z9ceKqv".to_string();
         contract.create_token(art.clone());
 
@@ -518,7 +543,7 @@ mod tests {
     // fn test_initialize_new_furball_twice_fails() {
     //     let context = get_context(carol());
     //     testing_env!(context);
-    //     let total_supply = 1_000_000_000_000_000u128;
+    //     let total_supply = 1_000_000_000u128;
     //     {
     //         let _contract = FurBall::new(bob(), total_supply.into());
     //     }
