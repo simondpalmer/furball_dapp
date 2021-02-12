@@ -3,8 +3,8 @@ import React from "react";
 import ReactDOM from "react-dom";
 import App from "./App";
 import { initCeramic } from "./db/ceramic";
+import { initIPFS } from './ipfs';
 import { initContract } from "./utils";
-import {initIPFS} from './ipfs'
 
 declare global {
   interface Window {
@@ -20,6 +20,7 @@ declare global {
   .then(() => {
     ReactDOM.render(<App />, document.querySelector("#root"));
     console.log(window.contract)
-  }).then(initIPFS)
+  })
+  .then(initIPFS)
   .then(initCeramic)
   .catch(console.error)

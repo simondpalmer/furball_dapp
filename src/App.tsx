@@ -1,13 +1,15 @@
 import React from "react";
 import "react-bootstrap";
-import { Route, Switch } from "react-router-dom";
+import { BrowserRouter as Router, Route, Switch } from "react-router-dom";
 import "regenerator-runtime/runtime";
 import { Header } from "./components/Header";
 import getConfig from "./config/config";
 import "./global.css";
+import { Artist } from "./pages/Artist";
+import { Artwork } from "./pages/Artwork";
 import { Index } from "./pages/Index";
 import { Lookup } from "./pages/Lookup";
-import { login, logout } from "./utils";
+import { login } from "./utils";
 
 const { networkId } = getConfig(process.env.NODE_ENV || "development");
 export default function App() {
@@ -36,32 +38,35 @@ export default function App() {
   } else {
     return (
       // use React Fragment, <>, to avoid wrapping elements in unnecessary divs
-      <>
-        <button
-          className="link"
-          style={{ position: "fixed", float: "right" }}
-          onClick={logout}
-        >
-          Sign out
-        </button>
-        <main>
-          <Header />
-          <Switch>
-            <Route path="/user:accountID">
-              <Account />
-            </Route>
-            <Route path="/artwork:artCID">
-              <Artwork />
-            </Route>
-            <Route path="/lookup">
-              <Lookup />
-            </Route>
-            <Route path="/">
-              <Index />
-            </Route>
-          </Switch>
-        </main>
-      </>
+      <Router>
+        <Header />
+        <Switch>
+          <Route path="/user:accountID">
+            <Artist />
+          </Route>
+          <Route path="/artwork:artCID">
+            <Artwork />
+          </Route>
+          <Route path="/lookup">
+            <Lookup />
+          </Route>
+          <Route path="/">
+            <Index />
+          </Route>
+        </Switch>
+      </Router>
+      // <>
+      //   <button
+      //     className="link"
+      //     style={{ position: "fixed", float: "right" }}
+      //     onClick={logout}
+      //   >
+      //     Sign out
+      //   </button>
+      //   <main>
+
+      //   </main>
+      // </>
     );
   }
 }
