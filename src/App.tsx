@@ -8,6 +8,7 @@ import getConfig from "./config/config";
 import { artMetadataCIDToStegods, artMetadataCIDToStegodCID } from "./db/ceramic";
 import "./global.css";
 import { ArtMetadata, ArtTokenBalance } from "./interface";
+import { CIDToUrl } from "./ipfs";
 import { login, logout } from "./utils";
 
 var Isotope = require("isotope-layout");
@@ -48,7 +49,7 @@ export default function App() {
 
     
     const cids = await Promise.all(proms)
-    setArtworks(cids.map(cid => `https://ipfs.infura.io/ipfs/${cid}`));
+    setArtworks(cids.map(CIDToUrl));
   }
 
   async function updateTokenBalances() {

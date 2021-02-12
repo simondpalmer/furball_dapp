@@ -7,3 +7,7 @@ export async function initIPFS() {
   });
   window.ipfs = ipfsClient
 }
+
+export async function CIDToUrl(cid: string) {
+  return `https://ipfs.infura.io/ipfs/${cid}`
+}
