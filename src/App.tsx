@@ -55,18 +55,6 @@ export default function App() {
           </Route>
         </Switch>
       </Router>
-      // <>
-      //   <button
-      //     className="link"
-      //     style={{ position: "fixed", float: "right" }}
-      //     onClick={logout}
-      //   >
-      //     Sign out
-      //   </button>
-      //   <main>
-
-      //   </main>
-      // </>
     );
   }
 }

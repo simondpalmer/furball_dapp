@@ -44,8 +44,7 @@ export default function ArtistForm(props: ArtistFormProps) {
     console.log(selectedBuffer);
     // throw "asasas"
     // const originalCID = await uploadArt(selectedBuffer);
-    const originalCID = (await window.ipfs.add(selectedBuffer)).toString()
-    console.log(`Original CID: ${originalCID}`);
+    const originalCID = (await window.ipfs.add(selectedBuffer)).path
     // TODO: stego
     const stegMsg = originalCID;
     console.log(`stegoing message "${stegMsg}" into image`);
@@ -53,6 +52,7 @@ export default function ArtistForm(props: ArtistFormProps) {
       new Uint8Array(selectedBuffer),
       new Uint8Array(Buffer.from(stegMsg))
     );
+    const stegoCID = (await window.ipfs.add(stegod)).path
     // const stegoCID = await uploadArtStegod(new Uint8Array(stegod));
     console.log(`Stegod CID: ${stegoCID}`);
 
@@ -70,7 +70,7 @@ export default function ArtistForm(props: ArtistFormProps) {
     setSelectedBuffer(null);
     // TODO: add back in
     // await updateTokenBalances();
-    window.location.reload();
+    // window.location.reload();
   }
 
   return (
