@@ -20,6 +20,7 @@ export async function initContract() {
   // Getting the Account ID. If still unauthorized, it's just empty string
   window.accountId = window.walletConnection.getAccountId();
 
+  console.log(nearConfig.contractName)
   // Initializing our contract APIs by contract name and configuration
   window.contract = await new Contract(
     window.walletConnection.account(),
@@ -36,7 +37,7 @@ export async function initContract() {
         "get_artwork_cid_of_original_cid",
         "get_amount_on_sale",
         "cost_per_token",
-        "get_all_sellers"
+        "get_all_sellers",
       ],
       // Change methods can modify the state. But you don't receive the returned value when called.
       changeMethods: [
@@ -47,6 +48,7 @@ export async function initContract() {
         "create_token",
         "update_profile",
         "buy",
+        "put_on_sale",
       ],
     }
   );
