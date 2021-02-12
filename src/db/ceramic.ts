@@ -68,6 +68,7 @@ export async function artMetadataCIDToStegodCID(
 export async function artMetadataCIDToStegods(
   artMetadataCID: CID
 ): Promise<Uint8Array> {
+  console.log(artMetadataCID)
   const artmetadata = await getArtMetadata(artMetadataCID);
   const stegod = await getArtStegod(artmetadata.stegod);
   console.log(stegod);

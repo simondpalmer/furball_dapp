@@ -41,10 +41,10 @@ export default function App() {
       <Router>
         <Header />
         <Switch>
-          <Route path="/user:accountID">
+          <Route path="/user/:accountID">
             <Artist />
           </Route>
-          <Route path="/artwork:artCID">
+          <Route path="/artwork/:artCID">
             <Artwork />
           </Route>
           <Route path="/lookup">
