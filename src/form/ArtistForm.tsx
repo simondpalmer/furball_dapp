@@ -1,15 +1,13 @@
 import { Grid } from "@material-ui/core";
 import React, { useState } from "react";
-import Button from "../components/controls/Button";
 import stegasus from "../../../stegasus/Cargo.toml";
-import FeaturesSelect from "../components/controls/FeaturesSelect";
-import FurryGroup from "../components/controls/FurryGroup";
+import { createToken } from "../api/token";
+import Button from "../components/controls/Button";
 import Input from "../components/controls/Input";
 import Upload from "../components/controls/Upload";
 import { Form, useForm } from "../components/useForm";
-import { createArtMetadata, uploadArt, uploadArtStegod } from "../db/ceramic";
+import { createArtMetadata } from "../db/ceramic";
 import { ArtMetadata } from "../interface";
-import { createToken } from "../api/token";
 
 const fursonaItems = [
   { id: "musclefur", title: "Musclefur" },
@@ -17,7 +15,7 @@ const fursonaItems = [
   { id: "other", title: "Other" },
 ];
 
-interface ArtistFormProps {}
+interface ArtistFormProps { }
 
 export default function ArtistForm(props: ArtistFormProps) {
   const [selectedBuffer, setSelectedBuffer] = useState<Buffer | null>(null);
@@ -64,7 +62,7 @@ export default function ArtistForm(props: ArtistFormProps) {
       //   bases: bases.length === 0 ? undefined : bases
     };
     const artDataCID = await createArtMetadata(artData);
-    await createToken(artDataCID);
+    await createToken(artDataCID, originalCID);
     alert("Uploaded!");
     // setBases([]);
     setSelectedBuffer(null);
